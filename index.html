@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Nepali Earning App - कार्यहरूबाट कमाइ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        /* ========================================================================= */
+        /* GLOBAL & FRIENDLY STYLES */
+        /* ========================================================================= */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f3f4f6; /* Lighter background for a cleaner look */
+            margin-bottom: 60px; 
+        }
+        .card { 
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Softer, modern shadow */
+            border-radius: 1rem; /* More rounded corners */
+        }
+        .disabled-btn { cursor: not-allowed; opacity: 0.6; }
+        .animated-gradient {
+            background-size: 200% 200%;
+            animation: gradient-animation 5s ease infinite;
+        }
+        @keyframes gradient-animation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Input focus style */
+        input:focus, textarea:focus, select:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+        }
+
+        /* ========================================================================= */
+        /* NAVIGATION & TABS */
+        /* ========================================================================= */
+        #bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            display: flex;
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+            z-index: 40;
+        }
+        .nav-item {
+            flex: 1;
+            padding: 8px 0;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #6b7280;
+            transition: color 0.2s;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+        .nav-item i {
+            font-size: 1.2rem;
+            margin-bottom: 3px;
+        }
+        .nav-item.active-tab {
+            color: #4f46e5;
+        }
+        
+        /* ========================================================================= */
+        /* CUSTOM UI COMPONENTS */
+        /* ========================================================================= */
+        /* Radio Tile Group for Deposit Methods */
+        .radio-tile-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .radio-tile-group label {
+            flex: 1 1 30%;
+            text-align: center;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.75rem; /* Slightly larger radius */
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        .radio-tile-group input:checked + label {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+            color: #4f46e5;
+            box-shadow: 0 0 0 2px #4f46e5;
+            transform: scale(1.03); /* Subtle scale effect */
+        }
+        .radio-tile-group input {
+            display: none;
+        }
+        
+        /* Referral Box */
+        .referral-code-box {
+            background-color: #eef2ff;
+            border: 2px dashed #4f46e5;
+            padding: 1rem;
+            border-radius: 1rem;
+            cursor: pointer;
+        }
+        
+        /* Telegram Button */
+        .telegram-btn {
+            background-color: #0088CC; 
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; 
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        .telegram-btn:hover { background-color: #0077B3; }
+        
+        /* Login/Register Background */
+        #login-register-view {
+             background: linear-gradient(135deg, #4f46e5 0%, #1e3a8a 100%); /* Blue gradient background */
+        }
+        #login-register-view .card {
+             border-radius: 1.5rem;
+        }
+        /* History Card Styles */
+        .history-card {
+            border-left-width: 4px;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .deposit-card { border-left-color: #10b981; background-color: #ecfdf5; } /* Green */
+        .withdrawal-card { border-left-color: #ef4444; background-color: #fef2f2; } /* Red */
+        .task-card { border-left-color: #3b82f6; background-color: #eff6ff; } /* Blue */
+        .checkin-card { border-left-color: #f59e0b; background-color: #fffbeb; } /* Amber */
+        .commission-card { border-left-color: #8b5cf6; background-color: #f5f3ff; } /* Violet */
+
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <div id="custom-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm transform transition-all duration-300 scale-100">
+            <h3 id="modal-title" class="text-xl font-bold mb-3 text-indigo-600">सन्देश</h3>
+            <div id="modal-content" class="text-gray-700 mb-6"></div>
+            <div class="flex justify-end">
+                <button id="modal-close-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">ठीक छ</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-container" class="min-h-screen">
+
+        <div id="login-register-view" class="flex items-center justify-center min-h-screen p-4">
+             <div class="w-full max-w-md">
+                 <div class="text-center mb-8">
+                     <h1 class="text-5xl font-extrabold text-white drop-shadow-lg">Nepali Earning App</h1>
+                     <p class="text-white opacity-80 mt-2">आफ्नो दिन सुरु गर्नुहोस्</p>
+                 </div>
+                 <div id="login-view" class="bg-white p-8 rounded-2xl card">
+                     <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">लगइन गर्नुहोस्</h2>
+                     <form id="login-form">
+                         <div class="mb-4">
+                             <label for="login-username" class="block text-gray-700 font-semibold mb-2">प्रयोगकर्ता नाम</label>
+                             <input type="text" id="login-username" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                         </div>
+                         <div class="mb-6">
+                             <label for="login-password" class="block text-gray-700 font-semibold mb-2">पासवर्ड</label>
+                             <input type="password" id="login-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                         </div>
+                         <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors text-lg shadow-md">लगइन</button>
+                     </form>
+                     <div id="login-status-message" class="mt-4 text-center text-red-600 font-semibold hidden"></div>
+                     <p class="text-center text-gray-600 my-4">वा</p>
+                     <button id="show-register-btn" class="w-full bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors">नयाँ खाता बनाउनुहोस्</button>
+                 </div>
+                 
+                 <div id="register-view" class="bg-white p-8 rounded-2xl card hidden">
+                    <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">नयाँ खाता</h2>
+                     <form id="register-form">
+                         <div class="mb-4">
+                             <label for="register-username" class="block text-gray-700 font-semibold mb-2">प्रयोगकर्ता नाम</label>
+                             <input type="text" id="register-username" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                         </div>
+                         <div class="mb-4">
+                             <label for="register-password" class="block text-gray-700 font-semibold mb-2">पासवर्ड</label>
+                             <input type="password" id="register-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg" required>
+                         </div>
+                         <div class="mb-6">
+                             <label for="register-referral-code" class="block text-gray-700 font-semibold mb-2">रेफरल कोड (वैकल्पिक)</label>
+                             <input type="text" id="register-referral-code" class="w-full px-4 py-3 border border-gray-300 rounded-lg uppercase" placeholder="आमन्त्रित कोड प्रविष्ट गर्नुहोस्">
+                             <p class="text-xs text-indigo-500 mt-1">रेफरल कोड प्रयोग गरे बापत रू. १५० बोनस पाउनुहोस्!</p>
+                         </div>
+                         <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold text-lg shadow-md">दर्ता र लगइन</button>
+                         <button id="show-login-btn" type="button" class="w-full mt-4 text-center text-indigo-600 font-semibold hover:underline">पहिले नै खाता छ? लगइन गर्नुहोस्</button>
+                     </form>
+                 </div>
+             </div>
+        </div>
+
+        <div id="dashboard-view" class="max-w-4xl mx-auto p-4 md:p-6 hidden">
+            
+            <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-xl card space-x-4 sticky top-0 z-30">
+                 <div class="flex items-center space-x-4">
+                    <h1 class="text-2xl font-bold text-indigo-600">Earning App</h1>
+                    <a id="telegram-link-btn" href="#" target="_blank" class="telegram-btn flex items-center hidden text-sm py-1 px-3">
+                        <i class="fab fa-telegram-plane mr-1"></i>
+                        जोडिनुहोस्
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <span class="block text-sm text-gray-500" id="username-display"></span>
+                        <span class="block text-xl font-bold text-green-600" id="user-balance">रू. ०</span>
+                    </div>
+                    <button id="logout-btn" class="bg-red-500 text-white w-10 h-10 rounded-full hover:bg-red-600 transition-colors flex items-center justify-center shadow-md"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </header>
+            
+            <main class="pb-20"> <div id="home-tab" class="tab-content">
+                    
+                    <div id="daily-checkin-btn-container" class="mb-6 p-4 bg-white card">
+                        <button id="daily-checkin-btn" class="w-full flex items-center justify-center p-3 rounded-xl text-lg disabled:opacity-75 bg-amber-500 text-white font-bold hover:bg-amber-600">
+                            <i class="fas fa-calendar-check mr-3"></i>
+                            दैनिक चेक-इन गर्नुहोस् (रू. <span id="checkin-reward-display">१०</span>)
+                        </button>
+                    </div>
+                    <div id="tasks-locked-message" class="text-center p-8 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl card animated-gradient">
+                        <i class="fas fa-lock text-4xl mb-3"></i>
+                        <h2 class="text-2xl font-bold mb-2">कार्यहरू लक छन्!</h2>
+                        <p id="lock-reason-text" class="text-lg">कार्यहरू प्रयोग गर्नको लागि कृपया रकम जम्मा (Deposit) गर्नुहोस्। जम्मा स्वीकृत भएपछि कार्यहरू सक्रिय हुनेछन्।</p>
+                        <button id="go-to-deposit-btn" class="mt-4 bg-white text-indigo-600 font-semibold px-6 py-2 rounded-full hover:bg-gray-100 shadow-lg">अहिले नै जम्मा गर्नुहोस्</button>
+                    </div>
+
+                    <div id="tasks-unlocked-content" class="hidden">
+                        <div id="task-expiry-info" class="p-3 mb-4 bg-green-100 text-green-800 rounded-lg font-medium border border-green-300">
+                             <i class="fas fa-info-circle mr-2"></i> 
+                             Tasks सक्रिय छन्। Task को म्याद सकिने मिति: <span id="tasks-expiry-date-display" class="font-bold">Loading...</span>
+                        </div>
+                        <div class="mb-8">
+                             <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">टास्क स्लॉट १ (Default)</h2>
+                            
+                            <div id="tasks-slot1-lock-message" class="text-center p-6 bg-yellow-100 text-yellow-800 rounded-xl card mb-4 hidden">
+                                <i class="fas fa-lock text-2xl mb-2"></i>
+                                <p class="font-semibold">यो टास्क स्लॉट अनलक गर्न रू. <span id="slot1-unlock-amount">५००</span> वा सोभन्दा बढीको जम्मा गर्नुहोस्।</p>
+                            </div>
+                             
+                             <div id="tasks-slot1-list" class="space-y-4"></div>
+                             <div id="no-tasks1-message" class="text-center p-8 bg-white rounded-xl card mt-4 hidden">
+                                <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                                <p class="text-gray-600 font-semibold">अहिले कुनै Slot 1 कार्य उपलब्ध छैनन्।</p>
+                            </div>
+                        </div>
+
+                        <div>
+                             <h2 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">टास्क स्लॉट २ (Premium)</h2>
+                            
+                            <div id="tasks-slot2-lock-message" class="text-center p-6 bg-red-100 text-red-800 rounded-xl card mb-4">
+                                <i class="fas fa-lock text-2xl mb-2"></i>
+                                <p class="font-semibold">यो प्रीमियम टास्क स्लॉट अनलक गर्न **रू. <span id="slot2-unlock-amount">१५००</span>** वा सोभन्दा बढीको **एकल जम्मा** गर्नुहोस्।</p>
+                            </div>
+                             
+                             <div id="tasks-slot2-list" class="space-y-4"></div>
+                             <div id="no-tasks2-message" class="text-center p-8 bg-white rounded-xl card mt-4 hidden">
+                                <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                                <p class="text-gray-600 font-semibold">अहिले कुनै Slot 2 कार्य उपलब्ध छैनन्।</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="deposit-tab" class="tab-content hidden">
+                    <div class="bg-white p-6 card">
+                        </div>
+                </div>
+
+                <div id="withdraw-tab" class="tab-content hidden">
+                    <div class="bg-white p-6 card">
+                        </div>
+                </div>
+                
+                <div id="history-tab" class="tab-content hidden">
+                    <div class="bg-white p-6 card">
+                         <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">आफ्नो इतिहास (My History)</h2>
+                         <div id="history-content-area" class="space-y-4">
+                             </div>
+                    </div>
+                </div>
+
+                <div id="invite-tab" class="tab-content hidden">
+                    <div class="bg-white p-6 card text-center">
+                        <i class="fas fa-user-friends text-5xl text-indigo-500 mb-4"></i>
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2">साथीहरूलाई आमन्त्रित गर्नुहोस्!</h2>
+                        <p class="text-gray-600 mb-4">तपाईंले आमन्त्रित गर्नुभएको साथीले **कार्यहरूबाट कमाएको रकमको १०% कमिसन** पाउनुहुनेछ।</p>
+                        
+                        <div class="my-6">
+                            <p class="text-lg font-semibold text-gray-700 mb-2">तपाईंको रेफरल कोड</p>
+                            <div class="referral-code-box">
+                                <span id="my-referral-code" class="text-3xl font-extrabold text-indigo-700 tracking-wider uppercase">Loading...</span>
+                            </div>
+                            <button id="copy-referral-btn" class="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-md"><i class="fas fa-copy mr-2"></i>कोड कपी गर्नुहोस्</button>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold mt-8 mb-3 text-gray-800">तपाईंको आमन्त्रित तथ्याङ्क</h3>
+                        <div class="flex justify-around items-center bg-gray-50 p-4 rounded-xl">
+                            <div class="text-center">
+                                <p id="total-referrals" class="text-3xl font-bold text-green-600">०</p>
+                                <p class="text-sm text-gray-500">कुल आमन्त्रित</p>
+                            </div>
+                            <div class="text-center">
+                                <p id="referral-commission" class="text-3xl font-bold text-indigo-600">रू. ०</p>
+                                <p class="text-sm text-gray-500">कुल कमिसन</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="admin-tab" class="tab-content hidden" data-is-admin="false">
+                    <div class="bg-white p-6 card space-y-8">
+                        <h2 class="text-2xl font-bold text-gray-800 border-b pb-3 border-gray-200">एडमिन प्यानल</h2>
+
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h3 class="text-xl font-bold mb-4 text-blue-700"><i class="fas fa-users mr-2"></i>प्रयोगकर्ता व्यवस्थापन (<span id="total-users-count">0</span> प्रयोगकर्ताहरू)</h3>
+                             
+                             <div class="bg-indigo-600 text-white p-4 rounded-xl mb-4 text-center shadow-md">
+                                <p class="text-sm font-semibold opacity-80">एपमा रहेको कुल रकम (प्रयोगकर्ताहरूको ब्यालेन्स)</p>
+                                <p id="app-total-balance" class="text-3xl font-extrabold mt-1">रू. ०.००</p>
+                            </div>
+
+                            <div id="user-management-list" class="space-y-4">
+                                </div>
+                        </div>
+
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h3 class="text-xl font-bold mb-4 text-green-700"><i class="fas fa-coins mr-2"></i>वित्तीय सीमाहरू</h3>
+                            <form id="financial-limits-form" class="space-y-4">
+                                <label class="block">
+                                    <span class="text-gray-700 font-semibold">कार्य स्लॉट १ अनलक गर्न आवश्यक जम्मा (रू.)</span>
+                                    <input type="number" id="task-unlock-amount-1" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="100" placeholder="जस्तै: 500" required>
+                                    <p class="text-xs text-green-600 mt-1">प्रयोगकर्ताले Slot 1 Tasks अनलक गर्नको लागि यो रकमभन्दा बढी जम्मा गर्नु पर्नेछ।</p>
+                                </label>
+                                <label class="block">
+                                    <span class="text-gray-700 font-semibold">कार्य स्लॉट २ (Premium) अनलक गर्न आवश्यक जम्मा (रू.)</span>
+                                    <input type="number" id="task-unlock-amount-2" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="500" placeholder="जस्तै: 1500" required>
+                                    <p class="text-xs text-green-600 mt-1">Slot 2 Tasks अनलक गर्न यो रकम वा सोभन्दा बढीको **एकल जम्मा** चाहिन्छ।</p>
+                                </label>
+                                <label class="block">
+                                    <span class="text-gray-700 font-semibold">Tasks सक्रिय रहने दिनहरू</span>
+                                    <input type="number" id="task-expiry-days" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="1" placeholder="जस्तै: 7" required>
+                                    <p class="text-xs text-green-600 mt-1">जम्मा गरेपछि Tasks (दुवै Slot) यति दिनको लागि सक्रिय रहनेछन्।</p>
+                                </label>
+                                <label class="block">
+                                    <span class="text-gray-700 font-semibold">न्यूनतम जम्मा (Minimum Deposit)</span>
+                                    <input type="number" id="min-deposit" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="10" placeholder="न्यूनतम जम्मा रकम" required>
+                                </label>
+                                <label class="block">
+                                    <span class="text-gray-700 font-semibold">न्यूनतम निकासी (Minimum Withdrawal)</span>
+                                    <input type="number" id="min-withdraw" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="10" placeholder="न्यूनतम निकासी रकम" required>
+                                </label>
+                                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg font-semibold hover:bg-green-700 shadow-md">सीमाहरू बचत गर्नुहोस्</button>
+                            </form>
+                        </div>
+                        
+                         <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                            <h3 class="text-xl font-bold mb-4 text-indigo-700"><i class="fas fa-list-check mr-2"></i>टास्क व्यवस्थापन</h3>
+                            
+                            <div class="mb-6 border-b pb-4 border-indigo-200">
+                                <h4 class="text-lg font-bold mb-3 text-indigo-700">टास्क स्लॉट १ (Default)</h4>
+                                <form id="add-task1-form" class="space-y-3 mb-4 p-3 bg-white rounded-lg shadow-md">
+                                    <p class="font-semibold text-gray-700">नयाँ Slot 1 कार्य थप्नुहोस्:</p>
+                                    <input type="text" id="task1-title" class="w-full px-3 py-2 border rounded-lg" placeholder="कार्यको शीर्षक (जस्तै: एउटा भिडियो हेर्नुहोस्)" required>
+                                    <input type="number" id="task1-reward" class="w-full px-3 py-2 border rounded-lg" placeholder="पुरस्कार रकम (रू.)" min="1" required>
+                                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md"><i class="fas fa-plus mr-2"></i>Slot 1 कार्य थप्नुहोस्</button>
+                                </form>
+                                <h5 class="font-semibold mt-4 mb-2 text-indigo-700">सक्रिय Slot 1 कार्यहरू</h5>
+                                <div id="active-tasks1-list" class="space-y-2"></div>
+                            </div>
+
+                            <div>
+                                <h4 class="text-lg font-bold mb-3 text-indigo-700">टास्क स्लॉट २ (Premium)</h4>
+                                <form id="add-task2-form" class="space-y-3 mb-4 p-3 bg-white rounded-lg shadow-md">
+                                    <p class="font-semibold text-gray-700">नयाँ Slot 2 (Premium) कार्य थप्नुहोस्:</p>
+                                    <input type="text" id="task2-title" class="w-full px-3 py-2 border rounded-lg" placeholder="कार्यको शीर्षक (जस्तै: ठूलो विज्ञापन हेर्नुहोस्)" required>
+                                    <input type="number" id="task2-reward" class="w-full px-3 py-2 border rounded-lg" placeholder="पुरस्कार रकम (रू.)" min="1" required>
+                                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md"><i class="fas fa-plus mr-2"></i>Slot 2 कार्य थप्नुहोस्</button>
+                                </form>
+                                <h5 class="font-semibold mt-4 mb-2 text-indigo-700">सक्रिय Slot 2 कार्यहरू</h5>
+                                <div id="active-tasks2-list" class="space-y-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <h3 class="text-xl font-bold mb-4 text-gray-700"><i class="fas fa-cogs mr-2"></i>एप सेटिङहरू</h3>
+                        <form id="settings-form" class="space-y-4">
+
+                            <label class="block">
+                                <span class="text-gray-700 font-semibold">दैनिक चेक-इन पुरस्कार (रू.)</span>
+                                <input type="number" id="daily-checkin-reward-input" class="mt-1 block w-full px-3 py-2 border rounded-lg" min="1" placeholder="दैनिक चेक-इन पुरस्कार रकम" required>
+                            </label>
+
+                            <label class="block">
+                                <span class="text-gray-700 font-semibold">Telegram Channel Link</span>
+                                <input type="url" id="telegram-link" class="mt-1 block w-full px-3 py-2 border rounded-lg" placeholder="https://t.me/yourchannel">
+                            </label>
+                            
+                            <label class="block">
+                                <span class="text-gray-700 font-semibold">eSewa ID (फोन नम्बर)</span>
+                                <input type="text" id="esewa-id-input" class="mt-1 block w-full px-3 py-2 border rounded-lg" placeholder="eSewa फोन नम्बर" required>
+                            </label>
+
+                           <label class="block">
+                                <span class="text-gray-700 font-semibold">Khalti ID</span>
+                                <input type="text" id="khalti-id" class="mt-1 block w-full px-3 py-2 border rounded-lg" placeholder="आफ्नो खल्ती ID">
+                            </label>
+                            <label class="block">
+                                <span class="text-gray-700 font-semibold">बैंक विवरण</span>
+                                <textarea id="bank-details" class="mt-1 block w-full px-3 py-2 border rounded-lg" rows="3" placeholder="बैंक विवरणहरू प्रविष्ट गर्नुहोस्"></textarea>
+                            </label>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 shadow-md">सेटिङहरू बचत गर्नुहोस्</button>
+                        </form>
+                        </div>
+
+                        <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-3 border-gray-200">विचाराधीन अनुरोधहरू (Pending Requests)</h3>
+                        <div id="pending-deposits-section">
+                             <h4 class="text-lg font-medium mb-2 text-indigo-700">विचाराधीन जम्मा अनुरोधहरू</h4>
+                            <div id="pending-deposits-list" class="space-y-3"></div>
+                        </div>
+                        <div id="pending-withdrawals-section" class="mt-6">
+                            <h4 class="text-lg font-medium mb-2 text-indigo-700">विचाराधीन निकासी अनुरोधहरू</h4>
+                            <div id="pending-withdrawals-list" class="space-y-3"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+    
+    <nav id="bottom-nav" class="hidden">
+        <button data-tab="home" class="nav-item active-tab"><i class="fas fa-tasks"></i>कार्यहरू</button>
+        <button data-tab="deposit" class="nav-item"><i class="fas fa-money-check-alt"></i>जम्मा</button>
+        <button data-tab="withdraw" class="nav-item"><i class="fas fa-wallet"></i>निकाल्नुहोस्</button>
+        <button data-tab="history" class="nav-item"><i class="fas fa-history"></i>इतिहास</button> 
+        <button data-tab="invite" class="nav-item"><i class="fas fa-user-friends"></i>आमन्त्रित</button>
+        <button data-tab="admin" class="nav-item hidden"><i class="fas fa-user-shield"></i>एडमिन</button>
+    </nav>
+    <script>
+    // --- IIFE to encapsulate the entire app logic ---
+    (() => {
+        // Updated version: Task Add Fix
+        const DB_KEY = 'avaAppDB_v36_task_add_fix'; 
+        const REFERRAL_BONUS_AMOUNT = 150.00; 
+        let loggedInUsername = sessionStorage.getItem('loggedInUser');
+
+        const elements = {
+            modal: document.getElementById('custom-modal'),
+            modalCloseBtn: document.getElementById('modal-close-btn'),
+            loginRegisterView: document.getElementById('login-register-view'),
+            dashboardView: document.getElementById('dashboard-view'),
+            
+            // NAVIGATION ELEMENTS
+            bottomNav: document.getElementById('bottom-nav'),
+            tabButtons: document.querySelectorAll('.nav-item'), 
+            adminTabButton: document.querySelector('#bottom-nav [data-tab="admin"]'), 
+            
+            tasksLockedMessage: document.getElementById('tasks-locked-message'),
+            tasksUnlockedContent: document.getElementById('tasks-unlocked-content'),
+            
+            // DAILY CHECK-IN ELEMENTS
+            dailyCheckinBtnContainer: document.getElementById('daily-checkin-btn-container'), 
+            dailyCheckinBtn: document.getElementById('daily-checkin-btn'),
+            checkinRewardDisplay: document.getElementById('checkin-reward-display'),
+            dailyCheckinRewardInput: document.getElementById('daily-checkin-reward-input'), 
+            
+            // Admin Task elements
+            addTask1Form: document.getElementById('add-task1-form'),
+            addTask2Form: document.getElementById('add-task2-form'),
+            activeTasks1List: document.getElementById('active-tasks1-list'),
+            activeTasks2List: document.getElementById('active-tasks2-list'),
+            
+            // Financial Limits elements
+            financialLimitsForm: document.getElementById('financial-limits-form'),
+            minDepositInput: document.getElementById('min-deposit'),
+            minWithdrawInput: document.getElementById('min-withdraw'),
+            taskUnlockAmount1Input: document.getElementById('task-unlock-amount-1'), // Slot 1 NEW INPUT
+            taskUnlockAmount2Input: document.getElementById('task-unlock-amount-2'), // Slot 2 NEW INPUT
+            taskExpiryDaysInput: document.getElementById('task-expiry-days'), 
+            
+            // Utility elements
+            modalTitle: document.getElementById('modal-title'),
+            modalContent: document.getElementById('modal-content'),
+            usernameDisplay: document.getElementById('username-display'),
+            userBalance: document.getElementById('user-balance'),
+            lockReasonText: document.getElementById('lock-reason-text'),
+            
+            tasksExpiryInfo: document.getElementById('task-expiry-info'), 
+            tasksExpiryDateDisplay: document.getElementById('tasks-expiry-date-display'), 
+            
+            // Task Slot 1 Elements
+            tasksSlot1LockMessage: document.getElementById('tasks-slot1-lock-message'),
+            tasksSlot1List: document.getElementById('tasks-slot1-list'),
+            noTasks1Message: document.getElementById('no-tasks1-message'),
+            slot1UnlockAmount: document.getElementById('slot1-unlock-amount'),
+            
+            // Task Slot 2 Elements
+            tasksSlot2LockMessage: document.getElementById('tasks-slot2-lock-message'),
+            tasksSlot2List: document.getElementById('tasks-slot2-list'),
+            noTasks2Message: document.getElementById('no-tasks2-message'),
+            slot2UnlockAmount: document.getElementById('slot2-unlock-amount'),
+            
+            // Invite Tab Elements
+            myReferralCode: document.getElementById('my-referral-code'),
+            totalReferrals: document.getElementById('total-referrals'),
+            referralCommission: document.getElementById('referral-commission'),
+            
+            // Telegram Element
+            telegramLinkBtn: document.getElementById('telegram-link-btn'),
+
+            // Admin Request Lists
+            pendingDepositsList: document.getElementById('pending-deposits-list'),
+            pendingWithdrawalsList: document.getElementById('pending-withdrawals-list'),
+            // Admin Settings Input
+            telegramLinkInput: document.getElementById('telegram-link'),
+            settingsForm: document.getElementById('settings-form'),
+            esewaIdInput: document.getElementById('esewa-id-input'),
+            
+            // Admin User Management Elements
+            totalUsersCount: document.getElementById('total-users-count'),
+            userManagementList: document.getElementById('user-management-list'),
+            appTotalBalance: document.getElementById('app-total-balance'), 
+            
+            // History Tab Elements
+            historyContentArea: document.getElementById('history-content-area')
+        };
+        
+        // ===============================================
+        // MODIFIED: Modal Logic
+        // ===============================================
+        
+        const showRewardModal = (rewardAmount, taskTitle) => {
+             // 1. Update the custom modal content for the Reward
+            elements.modalTitle.textContent = 'बधाई छ! पुरस्कार प्राप्त!';
+            elements.modalContent.innerHTML = `
+                <p class="text-xl font-bold text-green-600 mb-4">रू. ${rewardAmount.toFixed(2)} तपाईंको खातामा थपियो।</p>
+                <p class="text-gray-700 mb-4">कार्य: ${taskTitle}</p>
+                
+                <p class="text-sm text-gray-500 mt-4 font-semibold">कार्य सफलतापूर्वक सम्पन्न भयो।</p>
+            `;
+            
+            // 2. Show the modal
+            elements.modal.classList.remove('hidden');
+            elements.modal.classList.add('flex');
+        };
+
+        const showModal = (title, content) => {
+            elements.modalTitle.textContent = title;
+            elements.modalContent.innerHTML = `<p>${content}</p>`; 
+            elements.modal.classList.remove('hidden');
+            elements.modal.classList.add('flex');
+        };
+
+        const hideModal = () => {
+            elements.modal.classList.add('hidden');
+            elements.modal.classList.remove('flex');
+        };
+        // ===============================================
+
+        const getDB = () => {
+            const db = localStorage.getItem(DB_KEY);
+            return db ? JSON.parse(db) : null;
+        }
+        const saveDB = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+        // Utility function to format date
+        const formatDate = (isoString) => {
+            if (!isoString) return 'N/A';
+            const date = new Date(isoString);
+            return date.toLocaleDateString('ne-NP', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        };
+        
+        const initializeDB = () => {
+            const defaultDB = {
+                users: [],
+                tasks1: [], // MODIFIED: Task Slot 1
+                tasks2: [], // MODIFIED: Task Slot 2
+                settings: { 
+                    esewaID: '98XXXXXXXX', 
+                    khaltiID: '98XXXXXXXX', 
+                    bankDetails: 'बैंक: NIBL\nA/C नं: 1234567890\nनाम: Ava Solutions', 
+                    adminUsername: 'admin', 
+                    adminPassword: 'deshraj#66',
+                    telegramLink: '',
+                    DAILY_CHECKIN_REWARD: 10
+                },
+                financialSettings: {
+                    TASK_UNLOCK_AMOUNT_1: 500, // NEW SETTING (Slot 1)
+                    TASK_UNLOCK_AMOUNT_2: 1500, // NEW SETTING (Slot 2)
+                    TASK_EXPIRY_DAYS: 7,     
+                    MIN_DEPOSIT: 500,
+                    MIN_WITHDRAW: 400
+                },
+                requests: []
+            };
+
+            let existingDB = getDB();
+            
+            // Check if DB key matches the current version, otherwise re-initialize and migrate/patch
+            if (!existingDB || existingDB.DB_KEY !== DB_KEY) {
+                 // Force rewrite if key mismatch or new initialization
+                 const currentDB = existingDB || defaultDB;
+                 
+                 // Apply patching for new fields
+                 currentDB.settings = { ...defaultDB.settings, ...currentDB.settings };
+                 currentDB.financialSettings = { 
+                     ...defaultDB.financialSettings, 
+                     ...currentDB.financialSettings, 
+                     TASK_UNLOCK_AMOUNT_1: currentDB.financialSettings.TASK_UNLOCK_AMOUNT_1 || defaultDB.financialSettings.TASK_UNLOCK_AMOUNT_1,
+                     TASK_UNLOCK_AMOUNT_2: currentDB.financialSettings.TASK_UNLOCK_AMOUNT_2 || defaultDB.financialSettings.TASK_UNLOCK_AMOUNT_2,
+                     TASK_EXPIRY_DAYS: currentDB.financialSettings.TASK_EXPIRY_DAYS || defaultDB.financialSettings.TASK_EXPIRY_DAYS
+                 };
+
+                 // Migrate old tasks array to tasks1 (if tasks2 doesn't exist)
+                 if (currentDB.tasks && !currentDB.tasks1) {
+                     currentDB.tasks1 = currentDB.tasks;
+                     delete currentDB.tasks;
+                 }
+                 if(!currentDB.tasks1) currentDB.tasks1 = []; 
+                 if(!currentDB.tasks2) currentDB.tasks2 = []; 
+                 if(!currentDB.requests) currentDB.requests = [];
+                 
+                 // Ensure all user objects have necessary fields
+                 if (currentDB.users) {
+                     currentDB.users = currentDB.users.map(user => ({
+                         ...user, 
+                         hasUnlockedSlot2: user.hasUnlockedSlot2 === true ? true : false, 
+                         referralCode: user.username, 
+                         referredByCode: user.referredByCode || null, 
+                         totalCommission: user.totalCommission || 0.00, 
+                         taskCompletions: (user.taskCompletions || []).map(c => ({
+                             taskId: c.taskId || 'unknown',
+                             slot: c.slot || 'slot1', 
+                             date: c.date,
+                             reward: c.reward || 0
+                         })),
+                         transactions: user.transactions || [],
+                         hasDeposited: user.hasDeposited === true ? true : false 
+                     }));
+                 } else {
+                     currentDB.users = [];
+                 }
+
+
+                 currentDB.DB_KEY = DB_KEY; // Mark with current key
+                 saveDB(currentDB);
+            }
+        };
+
+
+        const getCurrentUser = () => {
+            if (!loggedInUsername) return null;
+            const db = getDB();
+            if (!db) return null; 
+
+            const isAdminUser = loggedInUsername.toLowerCase() === db.settings.adminUsername.toLowerCase();
+            
+            if (isAdminUser) {
+                return { 
+                    username: db.settings.adminUsername, 
+                    id: 'admin', 
+                    balance: Infinity, 
+                    tasksExpiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(), // Admin: 1 year
+                    isAdmin: true
+                };
+            }
+
+            const user = db.users.find(u => u.username === loggedInUsername);
+            
+            if (!user) {
+                handleLogout(false); 
+                return null;
+            }
+
+            user.isAdmin = false;
+            return user;
+        };
+        
+        // MODIFIED: Check tasks active based on expiry date
+        const areTasksActive = (currentUser) => {
+            if (currentUser.isAdmin) return true;
+            if (!currentUser.tasksExpiryDate) return false;
+            
+            const expiryDate = new Date(currentUser.tasksExpiryDate);
+            const now = new Date();
+            
+            // Check if current date is before the expiry date
+            return now < expiryDate; 
+        };
+        
+        // NEW: Check if Slot 1 is unlocked (basic)
+        const isSlot1Unlocked = (currentUser) => {
+             return areTasksActive(currentUser); // Slot 1 is active if general tasks are active
+        };
+        
+        // NEW: Check if Slot 2 is unlocked (premium)
+        const isSlot2Unlocked = (currentUser) => {
+             // Slot 2 requires Slot 1 to be active AND the specific flag to be set
+             return areTasksActive(currentUser) && currentUser.hasUnlockedSlot2;
+        };
+
+
+        // Utility function to check if dates are the same day (ignoring time)
+        const isSameDay = (date1, date2) => {
+            if (!date1 || !date2) return false;
+            const d1 = new Date(date1);
+            const d2 = new Date(date2);
+            return d1.getFullYear() === d2.getFullYear() &&
+                   d1.getMonth() === d2.getMonth() &&
+                   d1.getDate() === d2.getDate();
+        };
+
+        const updateCheckinButtonState = (currentUser, checkinReward) => {
+             elements.checkinRewardDisplay.textContent = checkinReward.toFixed(2);
+
+             if (currentUser.isAdmin) {
+                 elements.dailyCheckinBtnContainer.classList.add('hidden'); // Hide for Admin
+                 return;
+             }
+             elements.dailyCheckinBtnContainer.classList.remove('hidden'); // Show for regular users
+
+             const lastCheckinDate = currentUser.lastCheckinDate;
+             const today = new Date().toISOString();
+
+             if (isSameDay(lastCheckinDate, today)) {
+                 elements.dailyCheckinBtn.disabled = true;
+                 elements.dailyCheckinBtn.innerHTML = `<i class="fas fa-check-circle mr-3"></i> आजको चेक-इन गरिसकियो! (भोलि: रू. ${checkinReward.toFixed(2)})`;
+             } else {
+                 elements.dailyCheckinBtn.disabled = false;
+                 elements.dailyCheckinBtn.innerHTML = `<i class="fas fa-calendar-check mr-3"></i> दैनिक चेक-इन गर्नुहोस् (रू. ${checkinReward.toFixed(2)})`;
+             }
+        };
+
+        const handleDailyCheckin = () => {
+             const db = getDB();
+             const currentUser = getCurrentUser();
+             
+             if (!currentUser || currentUser.isAdmin) {
+                 showModal('त्रुटि', 'यो सुविधा केवल प्रयोगकर्ताहरूको लागि उपलब्ध छ।');
+                 return;
+             }
+
+             const userIndex = db.users.findIndex(u => u.username === currentUser.username);
+             const user = db.users[userIndex];
+             const today = new Date().toISOString();
+             const checkinReward = db.settings.DAILY_CHECKIN_REWARD;
+
+             if (isSameDay(user.lastCheckinDate, today)) {
+                 showModal('चेतावनी', 'तपाईंले आजको चेक-इन पहिले नै गरिसक्नुभयो। भोलि फेरि प्रयास गर्नुहोस्।');
+                 updateCheckinButtonState(user, checkinReward);
+                 return;
+             }
+             
+             // Process Check-in
+             user.balance += checkinReward;
+             user.lastCheckinDate = today; 
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'daily_checkin_credit',
+                 amount: checkinReward,
+                 date: today,
+                 reason: 'दैनिक चेक-इन पुरस्कार'
+             });
+             
+             saveDB(db);
+             showModal('बधाई छ!', `तपाईंले दैनिक चेक-इन बापत रू. ${checkinReward.toFixed(2)} कमाउनुभयो!`);
+             loadDashboardData(); // Reload data to update button state and balance
+        };
+
+        const setView = (isLoggedIn) => {
+            if (isLoggedIn) {
+                document.getElementById('login-register-view').classList.add('hidden');
+                document.getElementById('dashboard-view').classList.remove('hidden');
+                elements.bottomNav.classList.remove('hidden'); // Show bottom navigation
+                loadDashboardData();
+            } else {
+                document.getElementById('login-register-view').classList.remove('hidden');
+                document.getElementById('dashboard-view').classList.add('hidden');
+                elements.bottomNav.classList.add('hidden'); // Hide bottom navigation
+                document.getElementById('register-view').classList.add('hidden');
+                document.getElementById('login-view').classList.remove('hidden');
+                document.getElementById('login-form').reset();
+                document.getElementById('register-form').reset();
+                document.getElementById('login-status-message').classList.add('hidden');
+                setActiveTab('home'); 
+            }
+        };
+        
+        const updateTelegramButton = (db) => {
+             const telegramLink = db.settings.telegramLink;
+             elements.telegramLinkBtn.href = telegramLink; // Set href regardless
+             if (telegramLink && telegramLink.startsWith('http')) {
+                 elements.telegramLinkBtn.classList.remove('hidden');
+             } else {
+                 elements.telegramLinkBtn.classList.add('hidden');
+             }
+        };
+
+        const setActiveTab = (tabName) => {
+             elements.tabButtons.forEach(btn => {
+                btn.classList.toggle('active-tab', btn.dataset.tab === tabName);
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            document.getElementById(`${tabName}-tab`).classList.remove('hidden');
+
+            const currentUser = getCurrentUser();
+            if (!currentUser) return; 
+
+            const db = getDB();
+
+             if (tabName === 'home' && !currentUser.isAdmin) {
+                 const tasksActive = areTasksActive(currentUser);
+                 const slot1Unlocked = isSlot1Unlocked(currentUser);
+                 const slot2Unlocked = isSlot2Unlocked(currentUser);
+
+                 const checkinReward = db.settings.DAILY_CHECKIN_REWARD || 10;
+                 const taskUnlockAmount1 = db.financialSettings.TASK_UNLOCK_AMOUNT_1 || 500;
+                 const taskUnlockAmount2 = db.financialSettings.TASK_UNLOCK_AMOUNT_2 || 1500;
+                 
+                 elements.tasksLockedMessage.classList.toggle('hidden', tasksActive);
+                 elements.tasksUnlockedContent.classList.toggle('hidden', !tasksActive);
+                 
+                 // Update Check-in button state (Always visible for users now)
+                 updateCheckinButtonState(currentUser, checkinReward);
+
+                 if (tasksActive) {
+                     // 1. Task Expiry Info
+                     elements.tasksExpiryInfo.classList.remove('hidden');
+                     elements.tasksExpiryDateDisplay.textContent = formatDate(currentUser.tasksExpiryDate);
+                     
+                     // 2. Render Slot 1
+                     elements.tasksSlot1LockMessage.classList.add('hidden');
+                     renderTasks(db.tasks1, elements.tasksSlot1List, currentUser, 'slot1');
+                     elements.noTasks1Message.classList.toggle('hidden', db.tasks1.length > 0);
+                     
+                     // 3. Render Slot 2
+                     if (slot2Unlocked) {
+                         elements.tasksSlot2LockMessage.classList.add('hidden');
+                         renderTasks(db.tasks2, elements.tasksSlot2List, currentUser, 'slot2');
+                         elements.noTasks2Message.classList.toggle('hidden', db.tasks2.length > 0);
+                     } else {
+                         elements.tasksSlot2List.innerHTML = ''; // Clear tasks
+                         elements.noTasks2Message.classList.add('hidden'); 
+                         elements.slot2UnlockAmount.textContent = taskUnlockAmount2.toFixed(2);
+                         elements.tasksSlot2LockMessage.classList.remove('hidden');
+                     }
+                     
+                 } else {
+                    elements.tasksExpiryInfo.classList.add('hidden');
+                    // Update main Lock message with dynamic unlock amount
+                    elements.slot1UnlockAmount.textContent = taskUnlockAmount1.toFixed(2);
+                    elements.lockReasonText.textContent = `कार्यहरू प्रयोग गर्नको लागि कृपया रू. ${taskUnlockAmount1.toFixed(2)} भन्दा बढी रकम जम्मा (Deposit) गर्नुहोस्। जम्मा स्वीकृत भएपछि, कार्यहरू **${db.financialSettings.TASK_EXPIRY_DAYS || 7} दिनको लागि सक्रिय** हुनेछन्।`;
+                 }
+             } else if (tabName === 'deposit') {
+                 renderDepositTab(db, currentUser);
+             } else if (tabName === 'withdraw') {
+                 renderWithdrawTab(db, currentUser);
+             } else if (tabName === 'history') { 
+                 renderHistoryTab(db, currentUser);
+             } else if (tabName === 'invite') {
+                 renderInviteTab(db, currentUser); 
+             } else if (tabName === 'admin' && currentUser.isAdmin) {
+                 loadAdminSettings(db.settings, db.financialSettings); 
+                 renderUserManagement(db); 
+                 renderPendingRequests(db); 
+                 renderAdminTasks(db); 
+             }
+        };
+
+        const loadDashboardData = () => {
+            const currentUser = getCurrentUser();
+            if (!currentUser) { handleLogout(false); return; } 
+            const db = getDB();
+            
+            elements.usernameDisplay.textContent = `${currentUser.username}`;
+            elements.userBalance.textContent = `रू. ${currentUser.balance === Infinity ? '∞' : currentUser.balance.toFixed(2)}`;
+            
+            const isAdmin = currentUser.isAdmin;
+            elements.adminTabButton.classList.toggle('hidden', !isAdmin);
+            document.getElementById('admin-tab').dataset.isAdmin = isAdmin;
+            
+            updateTelegramButton(db); 
+            
+            const checkinReward = db.settings.DAILY_CHECKIN_REWARD || 10;
+            // Update Checkin button state on every reload, regardless of tasks status
+            updateCheckinButtonState(currentUser, checkinReward);
+            
+            // Re-render the active tab to update the data/status
+            setActiveTab(document.querySelector('.nav-item.active-tab').dataset.tab || 'home'); 
+        };
+        
+        // --- ADMIN USER MANAGEMENT LOGIC ---
+        
+        // Toggle visibility of password/referral code (default is visible)
+        const toggleUserDetail = (e) => {
+            const btn = e.target.closest('.toggle-icon');
+            if (!btn) return;
+            
+            const targetId = btn.dataset.targetId;
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                const isHidden = targetElement.dataset.hidden === 'true';
+                const actualValue = targetElement.dataset.actualValue;
+                
+                if (isHidden) {
+                    // Show the value
+                    targetElement.textContent = actualValue;
+                    targetElement.dataset.hidden = 'false';
+                    btn.classList.remove('fa-eye');
+                    btn.classList.add('fa-eye-slash'); // Icon: Eye-slash (meaning click to HIDE)
+                } else {
+                    // Hide the value
+                    const hiddenValue = '•'.repeat(actualValue.length || 8); // Use bullet points for security
+                    targetElement.textContent = hiddenValue;
+                    targetElement.dataset.hidden = 'true';
+                    btn.classList.remove('fa-eye-slash');
+                    btn.classList.add('fa-eye'); // Icon: Eye (meaning click to SHOW)
+                }
+            }
+        };
+
+
+        const renderUserCard = (user) => {
+            // Calculate total referrals for this user
+            const db = getDB();
+            const totalReferrals = db.users.filter(u => u.referredByCode === user.referralCode).length;
+            
+            // Determine tasks status for UI
+            const isTasksActive = areTasksActive(user);
+            const isSlot2Active = isSlot2Unlocked(user);
+            
+            const tasksStatusClass = isTasksActive ? 'bg-green-500' : 'bg-red-500';
+            const tasksStatusText = isTasksActive ? 
+                                    `Slot 1 सक्रिय (म्याद: ${formatDate(user.tasksExpiryDate)})` : 
+                                    'Slot 1 लक (निष्क्रिय)';
+            
+            const slot2StatusClass = isSlot2Active ? 'text-green-600' : 'text-red-600';
+            const slot2StatusText = isSlot2Active ? 'अनलक' : 'लक';
+
+            
+            const tasksActionButton = isTasksActive ? 
+                                        `<button onclick="window.appHandlers.extendTasks('${user.username}')" class="bg-indigo-500 text-white text-xs px-3 py-1 rounded-full hover:bg-indigo-600">म्याद थप्नुहोस्</button>` :
+                                        `<button onclick="window.appHandlers.unlockTasks('${user.username}')" class="bg-green-500 text-white text-xs px-3 py-1 rounded-full hover:bg-green-600">Slot 1 अनलक</button>`;
+            
+            const slot2ActionButton = isSlot2Active ? 
+                                        `<span class="text-xs text-green-600 font-semibold">Slot 2 अनलक छ</span>` :
+                                        `<button onclick="window.appHandlers.unlockTasksSlot2('${user.username}')" class="bg-purple-500 text-white text-xs px-3 py-1 rounded-full hover:bg-purple-600">Slot 2 अनलक</button>`;
+
+
+            return `
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex items-center justify-between border-b pb-2 mb-2">
+                        <h4 class="font-bold text-lg text-gray-800">${user.username}</h4>
+                        <span class="text-xl font-bold text-green-600">रू. ${user.balance.toFixed(2)}</span>
+                    </div>
+                    <div class="space-y-2 text-sm text-gray-600">
+                        <p class="flex justify-between items-center">
+                            <span>टास्क स्थिति (Slot 1):</span>
+                            <span class="font-semibold text-white px-2 py-0.5 rounded-full ${tasksStatusClass}">${tasksStatusText}</span>
+                        </p>
+                        <p class="flex justify-between items-center">
+                            <span>टास्क स्थिति (Slot 2):</span>
+                            <span class="font-semibold ${slot2StatusClass}">${slot2StatusText}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>पहिलो जम्मा:</span>
+                            <span class="font-semibold text-indigo-600">${user.hasDeposited ? 'सम्पन्न' : 'विचाराधीन/आवश्यक'}</span>
+                        </p>
+                        <p class="flex justify-between">
+                            <span>कुल आमन्त्रित:</span>
+                            <span class="font-semibold text-blue-600">${totalReferrals}</span>
+                        </p>
+                    </div>
+                    <div class="flex justify-between mt-4 space-x-2 border-t pt-3">
+                        ${tasksActionButton}
+                        ${slot2ActionButton}
+                    </div>
+                    <div class="flex justify-between mt-2 space-x-2">
+                         <button onclick="window.appHandlers.showUserBalanceModal('${user.username}', ${user.balance})" class="bg-blue-500 text-white text-xs px-3 py-1 rounded-full hover:bg-blue-600">ब्यालेन्स समायोजन</button>
+                         <button onclick="window.appHandlers.deleteUser('${user.username}')" class="bg-red-500 text-white text-xs px-3 py-1 rounded-full hover:bg-red-600">हटाउनुहोस्</button>
+                    </div>
+                </div>
+            `;
+        };
+        
+        // MODIFIED: Slot 1 unlock (basic)
+        const unlockTasks = (username) => {
+            const db = getDB();
+            const userIndex = db.users.findIndex(u => u.username === username);
+            if (userIndex === -1) {
+                showModal('त्रुटि', 'प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+            
+            const user = db.users[userIndex];
+            const expiryDays = db.financialSettings.TASK_EXPIRY_DAYS || 7;
+            const newExpiryDate = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
+            user.tasksExpiryDate = newExpiryDate;
+            user.hasDeposited = true; // Mark Slot 1 requirement met
+            
+            // Add transaction log
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'tasks_unlocked',
+                 amount: 0, 
+                 date: new Date().toISOString(),
+                 reason: `Tasks Slot 1 अनलक गरियो (एडमिनद्वारा) ${expiryDays} दिनको लागि`
+             });
+
+            saveDB(db);
+            showModal('सफलता', `${username} को Tasks Slot 1 ${expiryDays} दिनको लागि सफलतापूर्वक अनलक गरियो।`);
+            renderUserManagement(db); // Reload the list
+            if (loggedInUsername === username) loadDashboardData(); 
+        };
+        
+        // NEW: Slot 2 unlock
+        const unlockTasksSlot2 = (username) => {
+            const db = getDB();
+            const userIndex = db.users.findIndex(u => u.username === username);
+            if (userIndex === -1) {
+                showModal('त्रुटि', 'प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+            
+            const user = db.users[userIndex];
+            
+            if (!isSlot1Unlocked(user)) {
+                showModal('चेतावनी', 'Slot 2 अनलक गर्नको लागि Slot 1 Tasks पहिले नै सक्रिय हुनुपर्छ।');
+                return;
+            }
+            
+            if (user.hasUnlockedSlot2) {
+                 showModal('चेतावनी', 'Slot 2 Tasks पहिले नै अनलक गरिएको छ।');
+                 return;
+            }
+            
+            user.hasUnlockedSlot2 = true; 
+            
+            // Add transaction log
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'tasks_unlocked_slot2',
+                 amount: 0, 
+                 date: new Date().toISOString(),
+                 reason: `Tasks Slot 2 (Premium) अनलक गरियो (एडमिनद्वारा)`
+             });
+
+            saveDB(db);
+            showModal('सफलता', `${username} को Tasks Slot 2 (Premium) सफलतापूर्वक अनलक गरियो।`);
+            renderUserManagement(db); 
+            if (loggedInUsername === username) loadDashboardData(); 
+        };
+        
+        const extendTasks = (username) => {
+             const db = getDB();
+            const userIndex = db.users.findIndex(u => u.username === username);
+            if (userIndex === -1) {
+                showModal('त्रुटि', 'प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+            
+            const user = db.users[userIndex];
+            const expiryDays = db.financialSettings.TASK_EXPIRY_DAYS || 7;
+            
+            let baseDate = new Date();
+            if (user.tasksExpiryDate && new Date(user.tasksExpiryDate) > baseDate) {
+                 // Extend from current expiry date if it's in the future
+                baseDate = new Date(user.tasksExpiryDate);
+            }
+            
+            const newExpiryDate = new Date(baseDate.getTime() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+
+            user.tasksExpiryDate = newExpiryDate;
+            
+             // Add transaction log
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'tasks_extended',
+                 amount: 0, 
+                 date: new Date().toISOString(),
+                 reason: `Tasks Slot 1/2 को म्याद थपियो (एडमिनद्वारा) ${expiryDays} दिनको लागि`
+             });
+            
+            saveDB(db);
+            showModal('सफलता', `${username} को Tasks को म्याद ${expiryDays} दिनले बढाइयो। नयाँ म्याद: ${formatDate(newExpiryDate)}`);
+            renderUserManagement(db); 
+            if (loggedInUsername === username) loadDashboardData(); 
+        };
+
+        const renderUserManagement = (db) => {
+            const users = db.users;
+            elements.totalUsersCount.textContent = users.length;
+            
+            let totalAppBalance = users.reduce((sum, user) => sum + user.balance, 0);
+            elements.appTotalBalance.textContent = `रू. ${totalAppBalance.toFixed(2)}`;
+
+            if (users.length === 0) {
+                elements.userManagementList.innerHTML = '<p class="text-center text-gray-500">कुनै प्रयोगकर्ता फेला परेन।</p>';
+                return;
+            }
+
+            elements.userManagementList.innerHTML = users.map(user => renderUserCard(user)).join('');
+        };
+        
+        // --- ADMIN TASK MANAGEMENT LOGIC ---
+
+        const renderAdminTasks = (db) => {
+            
+            const renderTaskList = (tasks, listElement, slotName) => {
+                 listElement.innerHTML = '';
+
+                 if (tasks.length === 0) {
+                     listElement.innerHTML = '<p class="text-center text-gray-500">कुनै सक्रिय कार्यहरू छैनन्।</p>';
+                     return;
+                 }
+
+                 tasks.forEach(task => {
+                     const taskElement = document.createElement('div');
+                     taskElement.className = 'flex justify-between items-center p-3 bg-white border border-indigo-300 rounded-lg shadow-sm';
+                     taskElement.innerHTML = `
+                         <div class="flex-1">
+                             <p class="font-semibold text-indigo-700">${task.title}</p>
+                             <p class="text-sm text-gray-600">पुरस्कार: रू. ${task.reward.toFixed(2)}</p>
+                         </div>
+                         <button onclick="window.appHandlers.deleteTask('${task.id}', '${slotName}')" class="bg-red-500 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 transition-colors">
+                             <i class="fas fa-trash-alt text-sm"></i>
+                         </button>
+                     `;
+                     listElement.appendChild(taskElement);
+                 });
+            };
+            
+            renderTaskList(db.tasks1, elements.activeTasks1List, 'tasks1');
+            renderTaskList(db.tasks2, elements.activeTasks2List, 'tasks2');
+        };
+
+        // FIX: Ensure that after adding, the admin list and user dashboard are reloaded correctly.
+        const addTask = (title, reward, slotName) => {
+            const db = getDB();
+            const newTask = {
+                id: Date.now().toString(),
+                title,
+                reward: parseFloat(reward)
+            };
+            
+            // Check if slotName is valid before pushing
+            if (db[slotName]) {
+                 db[slotName].push(newTask);
+            } else {
+                 showModal('त्रुटि', 'अमान्य टास्क स्लॉट।');
+                 return;
+            }
+
+            saveDB(db);
+            
+            const slotNumber = slotName === 'tasks1' ? '१ (Default)' : '२ (Premium)';
+            showModal('सफलता', `नयाँ कार्य: "${title}" (Slot ${slotNumber}) सफलतापूर्वक थपियो।`);
+            
+            // --- FIX AREA: Ensure forms are reset and lists are rendered ---
+            // Reset the correct form
+            document.getElementById(`add-${slotName.replace('tasks','')}-form`).reset(); 
+            
+            // Re-render the admin task lists to show the new task immediately
+            renderAdminTasks(db); 
+            
+            // Reload dashboard data to update the user's view if they are on the Home tab
+            if (document.querySelector('.nav-item.active-tab').dataset.tab === 'home') {
+                loadDashboardData(); 
+            }
+            // --- END FIX AREA ---
+        };
+
+        const deleteTask = (taskId, slotName) => {
+            if (!confirm('के तपाईं साँच्चै यो कार्य हटाउन चाहनुहुन्छ? यसलाई मेटाउन सकिँदैन।')) return;
+            const db = getDB();
+            db[slotName] = db[slotName].filter(t => t.id !== taskId);
+            saveDB(db);
+            showModal('सफलता', 'कार्य सफलतापूर्वक हटाइयो।');
+            renderAdminTasks(db);
+            loadDashboardData(); // Update tasks in dashboard view
+        };
+        
+        // --- TASKS TAB LOGIC ---
+        
+        const renderTasks = (tasks, listElement, currentUser, slot) => {
+             const today = new Date().toISOString().split('T')[0];
+             listElement.innerHTML = '';
+             
+             if (tasks.length === 0) {
+                 return; // Let the No-Tasks message component handle this
+             }
+
+             tasks.forEach(task => {
+                 // Check if the user has completed this task today
+                 const completedToday = (currentUser.taskCompletions || []).some(
+                     c => c.taskId === task.id && c.slot === slot && c.date.split('T')[0] === today
+                 );
+
+                 const card = document.createElement('div');
+                 card.className = 'bg-white p-4 rounded-xl card flex justify-between items-center border-l-4 border-indigo-500';
+                 
+                 const statusText = completedToday ? '<span class="text-sm font-semibold text-green-600"><i class="fas fa-check-circle mr-1"></i> सम्पन्न भयो</span>' : 
+                                                   `<span class="text-sm font-semibold text-indigo-500">पुरस्कार: रू. ${task.reward.toFixed(2)}</span>`;
+
+                 const button = completedToday ? 
+                     `<button class="bg-gray-400 text-white px-4 py-2 rounded-lg disabled-btn" disabled>सम्पन्न</button>` :
+                     `<button onclick="window.appHandlers.completeTask('${task.id}', '${task.title}', ${task.reward}, '${slot}')" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors shadow-md">कार्य गर्नुहोस्</button>`;
+
+                 card.innerHTML = `
+                     <div>
+                         <h3 class="font-bold text-gray-800 text-lg">${task.title}</h3>
+                         ${statusText}
+                     </div>
+                     ${button}
+                 `;
+                 listElement.appendChild(card);
+             });
+        };
+
+        const completeTask = (taskId, title, reward, slot) => {
+            const db = getDB();
+            const currentUser = getCurrentUser();
+            const userIndex = db.users.findIndex(u => u.username === currentUser.username);
+            const user = db.users[userIndex];
+            const today = new Date().toISOString();
+            const todayDateString = today.split('T')[0];
+
+            // Re-check: only possible if the specific slot is unlocked
+            if (slot === 'slot1' && !isSlot1Unlocked(currentUser)) {
+                 showModal('कार्य लक', 'Slot 1 Tasks प्रयोग गर्नको लागि म्याद सक्रिय हुनुपर्छ।');
+                 loadDashboardData(); 
+                 return;
+            }
+            if (slot === 'slot2' && !isSlot2Unlocked(currentUser)) {
+                 showModal('कार्य लक', 'Slot 2 Tasks प्रयोग गर्नको लागि प्रीमियम अनलक हुनुपर्छ।');
+                 loadDashboardData(); 
+                 return;
+            }
+
+            // Check if already completed today (client-side protection)
+            const completedToday = (user.taskCompletions || []).some(
+                c => c.taskId === taskId && c.slot === slot && c.date.split('T')[0] === todayDateString
+            );
+
+            if (completedToday) {
+                showModal('चेतावनी', 'तपाईंले यो कार्य आजको लागि पहिले नै गरिसक्नुभयो। भोलि फेरि प्रयास गर्नुहोस्।');
+                return;
+            }
+
+            // Grant reward
+            user.balance += reward;
+            
+            // Log completion
+            if (!user.taskCompletions) user.taskCompletions = [];
+            user.taskCompletions.push({ taskId, slot, date: today, reward });
+            
+            // Log transaction
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'task_credit',
+                 amount: reward,
+                 date: today,
+                 reason: `कार्य (${slot.toUpperCase() === 'SLOT1' ? 'साधारण' : 'प्रिमियम'}): ${title} बाट आम्दानी`
+             });
+            
+            // Handle Referral Commission
+            if (user.referredByCode) {
+                 const referrerIndex = db.users.findIndex(u => u.referralCode === user.referredByCode);
+                 if (referrerIndex !== -1) {
+                     const referrer = db.users[referrerIndex];
+                     const commission = reward * 0.10; // 10% commission
+                     
+                     referrer.balance += commission;
+                     referrer.totalCommission += commission;
+                     
+                     // Log referrer transaction
+                     if (!referrer.transactions) referrer.transactions = [];
+                     referrer.transactions.push({
+                         type: 'referral_commission',
+                         amount: commission,
+                         date: today,
+                         reason: `${user.username} को कार्य (${slot.toUpperCase()}) बाट कमिसन`
+                     });
+                 }
+            }
+
+            saveDB(db);
+            showRewardModal(reward, title);
+            loadDashboardData(); // Reload UI
+        };
+        
+        // --- DEPOSIT & WITHDRAW LOGIC ---
+        
+        const renderDepositTab = (db, currentUser) => {
+            const depositContent = document.getElementById('deposit-tab').querySelector('.card');
+            
+            if (currentUser.isAdmin) {
+                 depositContent.innerHTML = `<p class="text-center text-red-500 font-semibold">एडमिन प्रयोगकर्ताले जम्मा गर्न मिल्दैन।</p>`;
+                 return;
+            }
+
+            const minDeposit = db.financialSettings.MIN_DEPOSIT || 500;
+            const esewaId = db.settings.esewaID || '98XXXXXXXX';
+            const khaltiId = db.settings.khaltiID || '98XXXXXXXX';
+            const bankDetails = db.settings.bankDetails || 'बैंक विवरण उपलब्ध छैन।';
+            
+            const taskUnlockAmount1 = db.financialSettings.TASK_UNLOCK_AMOUNT_1 || 500;
+            const taskUnlockAmount2 = db.financialSettings.TASK_UNLOCK_AMOUNT_2 || 1500;
+            const expiryDays = db.financialSettings.TASK_EXPIRY_DAYS || 7;
+            
+            const slot1Unlocked = isSlot1Unlocked(currentUser);
+            const slot2Unlocked = isSlot2Unlocked(currentUser);
+            
+            let tasksUnlockMessage = '';
+            
+            if (!slot1Unlocked) {
+                 tasksUnlockMessage += `<p class="text-sm font-bold text-red-600 mb-2">⚠️ Tasks Slot 1 अनलक गर्न रू. ${taskUnlockAmount1.toFixed(2)} वा सोभन्दा बढी जम्मा गर्नुहोस्।</p>`;
+            } else {
+                 tasksUnlockMessage += `<p class="text-sm font-bold text-green-600 mb-2">✅ Tasks Slot 1 सक्रिय छन्।</p>`;
+            }
+            
+            if (!slot2Unlocked) {
+                 tasksUnlockMessage += `<p class="text-sm font-bold text-purple-600">💎 Tasks Slot 2 अनलक गर्न रू. ${taskUnlockAmount2.toFixed(2)} वा सोभन्दा बढीको **एकल जम्मा** गर्नुहोस्।</p>`;
+            } else {
+                 tasksUnlockMessage += `<p class="text-sm font-bold text-green-600">✅ Tasks Slot 2 (Premium) सक्रिय छन्।</p>`;
+            }
+
+
+            // Check for pending deposit requests
+            const hasPendingRequest = db.requests.some(req => 
+                req.username === currentUser.username && 
+                req.type === 'deposit' && 
+                req.status === 'pending'
+            );
+            
+            if (hasPendingRequest) {
+                 depositContent.innerHTML = `
+                    <div class="text-center p-8 bg-yellow-100 rounded-xl border border-yellow-400">
+                        <i class="fas fa-hourglass-half text-4xl text-yellow-600 mb-3"></i>
+                        <h2 class="text-2xl font-bold mb-2 text-gray-800">विचाराधीन अनुरोध</h2>
+                        <p class="text-gray-700">तपाईंको जम्मा अनुरोध विचाराधीन छ। कृपया एडमिनले अनुमोदन (Approve) गर्ने प्रतीक्षा गर्नुहोस्।</p>
+                    </div>
+                 `;
+                 return;
+            }
+
+            depositContent.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">जम्मा गर्नुहोस् (Deposit)</h2>
+                <div class="mb-4 p-3 bg-gray-50 rounded-lg">${tasksUnlockMessage}</div>
+                <p class="text-gray-600 mb-4">न्यूनतम जम्मा रकम: <span class="font-bold text-indigo-600">रू. ${minDeposit.toFixed(2)}</span></p>
+
+                <form id="deposit-form" class="space-y-4 mt-6">
+                    <label class="block">
+                        <span class="text-gray-700 font-semibold">जम्मा गर्नुपर्ने रकम (रू.)</span>
+                        <input type="number" id="deposit-amount" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="रकम प्रविष्ट गर्नुहोस्" min="${minDeposit}" required>
+                    </label>
+
+                    <span class="text-gray-700 font-semibold block mt-4">भुक्तानी विधि छान्नुहोस्:</span>
+                    <div class="radio-tile-group">
+                        <input type="radio" id="eSewa" name="payment-method" value="eSewa" required>
+                        <label for="eSewa" class="flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/ESewa_Logo.png/1200px-ESewa_Logo.png" alt="eSewa" class="w-10 h-10 object-contain mb-1">
+                            eSewa
+                        </label>
+                        <input type="radio" id="Khalti" name="payment-method" value="Khalti">
+                        <label for="Khalti" class="flex flex-col items-center">
+                            <img src="https://khalti-blog.s3.ap-south-1.amazonaws.com/wp-content/uploads/2021/01/20120247/Khalti-Logo-New.png" alt="Khalti" class="w-10 h-10 object-contain mb-1">
+                            Khalti
+                        </label>
+                         <input type="radio" id="Bank" name="payment-method" value="Bank">
+                        <label for="Bank" class="flex flex-col items-center">
+                            <i class="fas fa-university text-xl mb-1"></i>
+                            बैंक
+                        </label>
+                    </div>
+
+                    <div id="payment-details-info" class="p-4 bg-gray-100 rounded-lg border border-gray-300 mt-4 hidden">
+                         <h4 class="font-bold text-lg text-gray-800 mb-2">भुक्तानी जानकारी</h4>
+                         <p class="text-gray-700 font-medium" id="method-display-info"></p>
+                    </div>
+                    
+                    <label class="block">
+                        <span class="text-gray-700 font-semibold">ट्रान्जेक्शन कोड/प्रूफ (Transaction Code/Proof)</span>
+                        <input type="text" id="deposit-proof" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg" placeholder="ट्रान्जेक्शन कोड वा स्न्यापसट आईडी" required>
+                    </label>
+
+                    <button type="submit" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition-colors text-lg shadow-md">अनुरोध जम्मा गर्नुहोस्</button>
+                </form>
+            `;
+            
+            // Add listener for method change
+            const paymentRadios = document.querySelectorAll('input[name="payment-method"]');
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const infoBox = document.getElementById('payment-details-info');
+                    const infoDisplay = document.getElementById('method-display-info');
+                    let infoText = '';
+
+                    switch(radio.value) {
+                        case 'eSewa':
+                            infoText = `<span class="font-bold">eSewa ID:</span> ${esewaId}`;
+                            break;
+                        case 'Khalti':
+                            infoText = `<span class="font-bold">Khalti ID:</span> ${khaltiId}`;
+                            break;
+                        case 'Bank':
+                            infoText = `<span class="font-bold">बैंक विवरण:</span><br>${bankDetails.replace(/\n/g, '<br>')}`;
+                            break;
+                        default:
+                            infoText = 'कृपया विधि छान्नुहोस्।';
+                    }
+                    infoDisplay.innerHTML = infoText;
+                    infoBox.classList.remove('hidden');
+                });
+            });
+
+            document.getElementById('deposit-form').addEventListener('submit', handleDepositRequest);
+        };
+        
+        const handleDepositRequest = (e) => {
+            e.preventDefault();
+            const db = getDB();
+            const currentUser = getCurrentUser();
+            
+            const amount = parseFloat(document.getElementById('deposit-amount').value);
+            const proof = document.getElementById('deposit-proof').value.trim();
+            const method = document.querySelector('input[name="payment-method"]:checked').value;
+            const minDeposit = db.financialSettings.MIN_DEPOSIT || 500;
+
+            if (amount < minDeposit) {
+                showModal('त्रुटि', `न्यूनतम जम्मा रकम रू. ${minDeposit.toFixed(2)} हुनुपर्छ।`);
+                return;
+            }
+
+            const newRequest = {
+                id: Date.now().toString(),
+                type: 'deposit',
+                username: currentUser.username,
+                amount: amount,
+                paymentMethod: method,
+                transactionCode: proof,
+                date: new Date().toISOString(),
+                status: 'pending' 
+            };
+            
+            db.requests.push(newRequest);
+            saveDB(db);
+
+            showModal('सफलता', 'तपाईंको जम्मा अनुरोध सफलतापूर्वक पठाइएको छ। कृपया एडमिनको अनुमोदनको लागि प्रतीक्षा गर्नुहोस्।');
+            document.getElementById('deposit-form').reset();
+            loadDashboardData(); // Reload to show pending status
+        };
+
+        const renderWithdrawTab = (db, currentUser) => {
+            const withdrawContent = document.getElementById('withdraw-tab').querySelector('.card');
+
+            if (currentUser.isAdmin) {
+                 withdrawContent.innerHTML = `<p class="text-center text-red-500 font-semibold">एडमिन प्रयोगकर्ताले निकासी गर्न मिल्दैन।</p>`;
+                 return;
+            }
+            
+            const minWithdraw = db.financialSettings.MIN_WITHDRAW || 400;
+            const currentBalance = currentUser.balance;
+
+            // Check for pending withdrawal requests
+            const hasPendingRequest = db.requests.some(req => 
+                req.username === currentUser.username && 
+                req.type === 'withdrawal' && 
+                req.status === 'pending'
+            );
+            
+            if (hasPendingRequest) {
+                 withdrawContent.innerHTML = `
+                    <div class="text-center p-8 bg-yellow-100 rounded-xl border border-yellow-400">
+                        <i class="fas fa-hourglass-half text-4xl text-yellow-600 mb-3"></i>
+                        <h2 class="text-2xl font-bold mb-2 text-gray-800">विचाराधीन अनुरोध</h2>
+                        <p class="text-gray-700">तपाईंको निकासी अनुरोध विचाराधीन छ। कृपया एडमिनले भुक्तानी गर्ने प्रतीक्षा गर्नुहोस्।</p>
+                    </div>
+                 `;
+                 return;
+            }
+            
+            const isBalanceEnough = currentBalance >= minWithdraw;
+            const buttonState = isBalanceEnough ? '' : 'disabled-btn';
+            const buttonText = isBalanceEnough ? 'निकासी अनुरोध गर्नुहोस्' : `ब्यालेन्स अपर्याप्त (न्यूनतम रू. ${minWithdraw.toFixed(2)})`;
+
+
+            withdrawContent.innerHTML = `
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">निकासी गर्नुहोस् (Withdrawal)</h2>
+                <p class="text-gray-600 mb-2">तपाईंको वर्तमान ब्यालेन्स: <span class="font-bold text-green-600">रू. ${currentBalance.toFixed(2)}</span></p>
+                <p class="text-gray-600 mb-4">न्यूनतम निकासी रकम: <span class="font-bold text-indigo-600">रू. ${minWithdraw.toFixed(2)}</span></p>
+
+                <form id="withdraw-form" class="space-y-4 mt-6">
+                    <label class="block">
+                        <span class="text-gray-700 font-semibold">निकासी गर्नुपर्ने रकम (रू.)</span>
+                        <input type="number" id="withdraw-amount" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg text-lg" placeholder="रकम प्रविष्ट गर्नुहोस्" min="${minWithdraw}" max="${currentBalance.toFixed(2)}" required>
+                    </label>
+
+                    <span class="text-gray-700 font-semibold block mt-4">भुक्तानी विधि छान्नुहोस्:</span>
+                    <div class="radio-tile-group">
+                        <input type="radio" id="eSewaW" name="withdrawal-method" value="eSewa" required>
+                        <label for="eSewaW" class="flex flex-col items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/ESewa_Logo.png/1200px-ESewa_Logo.png" alt="eSewa" class="w-10 h-10 object-contain mb-1">
+                            eSewa
+                        </label>
+                        <input type="radio" id="KhaltiW" name="withdrawal-method" value="Khalti">
+                        <label for="KhaltiW" class="flex flex-col items-center">
+                            <img src="https://khalti-blog.s3.ap-south-1.amazonaws.com/wp-content/uploads/2021/01/20120247/Khalti-Logo-New.png" alt="Khalti" class="w-10 h-10 object-contain mb-1">
+                            Khalti
+                        </label>
+                         <input type="radio" id="BankW" name="withdrawal-method" value="Bank">
+                        <label for="BankW" class="flex flex-col items-center">
+                            <i class="fas fa-university text-xl mb-1"></i>
+                            बैंक
+                        </label>
+                    </div>
+                    
+                    <label class="block">
+                        <span class="text-gray-700 font-semibold">भुक्तानीको लागि ID/विवरण</span>
+                        <textarea id="withdrawal-details" class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg" rows="3" placeholder="eSewa/Khalti नम्बर वा बैंक खाता विवरण" required></textarea>
+                    </label>
+
+                    <button type="submit" id="submit-withdraw-btn" class="w-full bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors text-lg shadow-md ${buttonState}" ${isBalanceEnough ? '' : 'disabled'}>${buttonText}</button>
+                </form>
+            `;
+            
+            document.getElementById('withdraw-form').addEventListener('submit', handleWithdrawalRequest);
+        };
+        
+        const handleWithdrawalRequest = (e) => {
+            e.preventDefault();
+            const db = getDB();
+            const currentUser = getCurrentUser();
+            
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const details = document.getElementById('withdrawal-details').value.trim();
+            const method = document.querySelector('input[name="withdrawal-method"]:checked').value;
+            const minWithdraw = db.financialSettings.MIN_WITHDRAW || 400;
+
+            if (amount < minWithdraw) {
+                showModal('त्रुटि', `न्यूनतम निकासी रकम रू. ${minWithdraw.toFixed(2)} हुनुपर्pछ।`);
+                return;
+            }
+            if (amount > currentUser.balance) {
+                showModal('त्रुटि', 'अपर्याप्त ब्यालेन्स।');
+                return;
+            }
+            
+            const userIndex = db.users.findIndex(u => u.username === currentUser.username);
+            const user = db.users[userIndex];
+            
+            // Deduct balance immediately
+            user.balance -= amount;
+
+            // Log pending request
+            const newRequest = {
+                id: Date.now().toString(),
+                type: 'withdrawal',
+                username: currentUser.username,
+                amount: amount,
+                paymentMethod: method,
+                details: details,
+                date: new Date().toISOString(),
+                status: 'pending' 
+            };
+            
+            db.requests.push(newRequest);
+            
+            // Log transaction (as pending/debit)
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'withdrawal_debit',
+                 amount: -amount, // Negative for debit
+                 date: new Date().toISOString(),
+                 reason: 'निकासी अनुरोध (विचाराधीन)'
+             });
+            
+            saveDB(db);
+
+            showModal('सफलता', `तपाईंको रू. ${amount.toFixed(2)} निकासी अनुरोध सफलतापूर्वक पठाइएको छ।`);
+            document.getElementById('withdraw-form').reset();
+            loadDashboardData(); // Reload to show new balance and pending status
+        };
+        
+        // --- ADMIN REQUEST HANDLING ---
+
+        // MODIFIED: Deposit approval logic for both task slots
+        const approveDeposit = (requestId, username, amount) => {
+            const db = getDB();
+            const requestIndex = db.requests.findIndex(req => req.id === requestId);
+            const userIndex = db.users.findIndex(u => u.username === username);
+
+            if (requestIndex === -1 || userIndex === -1) {
+                showModal('त्रुटि', 'अनुरोध वा प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+
+            const user = db.users[userIndex];
+            const request = db.requests[requestIndex];
+            let successMessage = `जम्मा स्वीकृत। रू. ${amount.toFixed(2)} सफलतापूर्वक थपियो।`;
+            
+            // 1. Credit balance
+            user.balance += amount;
+
+            // 2. Task Slot 1 Unlock Logic (Based on cumulative status)
+            const taskUnlockAmount1 = db.financialSettings.TASK_UNLOCK_AMOUNT_1 || 500;
+            const expiryDays = db.financialSettings.TASK_EXPIRY_DAYS || 7;
+            
+            if (amount >= taskUnlockAmount1 && !isSlot1Unlocked(user)) {
+                
+                const newExpiryDate = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+                
+                user.tasksExpiryDate = newExpiryDate;
+                user.hasDeposited = true; 
+                
+                 user.transactions.push({
+                     type: 'tasks_unlocked_deposit',
+                     amount: 0, 
+                     date: new Date().toISOString(),
+                     reason: `Tasks Slot 1 अनलक गरियो (${expiryDays} दिनको लागि) - रू. ${amount.toFixed(2)} डिपोजिटको आधारमा`
+                 });
+                 successMessage += ` Tasks Slot 1 ${expiryDays} दिनको लागि सक्रिय गरियो।`;
+            } else if (isSlot1Unlocked(user)) {
+                 // Check if it should extend the time if deposit is large
+                 // Logic simplified: only extend if currently expired (Admin can manually extend for active users)
+            }
+            
+            // 3. Task Slot 2 Unlock Logic (Based on single deposit amount)
+            const taskUnlockAmount2 = db.financialSettings.TASK_UNLOCK_AMOUNT_2 || 1500;
+            
+            if (amount >= taskUnlockAmount2 && !user.hasUnlockedSlot2) {
+                user.hasUnlockedSlot2 = true;
+                
+                 user.transactions.push({
+                     type: 'tasks_unlocked_slot2_deposit',
+                     amount: 0, 
+                     date: new Date().toISOString(),
+                     reason: `Tasks Slot 2 (Premium) अनलक गरियो - रू. ${amount.toFixed(2)} डिपोजिटको आधारमा`
+                 });
+                 successMessage += ` Tasks Slot 2 (Premium) पनि अनलक गरियो।`;
+            }
+            
+            // 4. Mark request as approved
+            request.status = 'approved';
+            
+            // 5. Update transaction log
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'deposit_credit',
+                 amount: amount,
+                 date: new Date().toISOString(),
+                 reason: `जम्मा स्वीकृत: ${request.paymentMethod} - ${request.transactionCode}`
+             });
+
+
+            saveDB(db);
+            showModal('सफलता', successMessage);
+            renderPendingRequests(db); 
+            // If the admin is also the user logged in, reload their dashboard
+            if (loggedInUsername === username) loadDashboardData(); 
+        };
+
+        const rejectDeposit = (requestId, username, amount) => {
+            const db = getDB();
+            const requestIndex = db.requests.findIndex(req => req.id === requestId);
+            const userIndex = db.users.findIndex(u => u.username === username);
+
+            if (requestIndex === -1 || userIndex === -1) {
+                showModal('त्रुटि', 'अनुरोध वा प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+
+            const request = db.requests[requestIndex];
+            request.status = 'rejected';
+
+            // Add transaction log 
+             if (!db.users[userIndex].transactions) db.users[userIndex].transactions = [];
+             db.users[userIndex].transactions.push({
+                 type: 'deposit_rejected',
+                 amount: 0, 
+                 date: new Date().toISOString(),
+                 reason: `जम्मा अनुरोध अस्वीकृत: ${request.paymentMethod} - ${request.transactionCode}`
+             });
+
+            saveDB(db);
+            showModal('अस्वीकृत', `रू. ${amount.toFixed(2)} को जम्मा अनुरोध अस्वीकृत भयो।`);
+            renderPendingRequests(db);
+        };
+        
+        const approveWithdrawal = (requestId, username, amount) => {
+            const db = getDB();
+            const requestIndex = db.requests.findIndex(req => req.id === requestId);
+            const userIndex = db.users.findIndex(u => u.username === username);
+
+            if (requestIndex === -1 || userIndex === -1) {
+                showModal('त्रुटि', 'अनुरोध वा प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+
+            const user = db.users[userIndex];
+            const request = db.requests[requestIndex];
+            
+            // Mark request as approved
+            request.status = 'approved';
+            
+            // Update transaction log (change reason from 'pending' to 'approved')
+            const transactionIndex = user.transactions.findIndex(t => 
+                t.type === 'withdrawal_debit' && 
+                t.amount === -amount && 
+                t.reason === 'निकासी अनुरोध (विचाराधीन)' &&
+                new Date(t.date).toDateString() === new Date(request.date).toDateString()
+            );
+            
+            if (transactionIndex !== -1) {
+                 user.transactions[transactionIndex].reason = 'निकासी सफल (प्रदत्त)';
+                 user.transactions[transactionIndex].type = 'withdrawal_approved';
+            } else {
+                 user.transactions.push({
+                     type: 'withdrawal_approved',
+                     amount: -amount,
+                     date: new Date().toISOString(),
+                     reason: 'निकासी सफल (प्रदत्त)'
+                 });
+            }
+
+
+            saveDB(db);
+            showModal('सफलता', `रू. ${amount.toFixed(2)} निकासी अनुरोध स्वीकृत र भुक्तानी गरियो।`);
+            renderPendingRequests(db);
+        };
+
+        const rejectWithdrawal = (requestId, username, amount) => {
+            const db = getDB();
+            const requestIndex = db.requests.findIndex(req => req.id === requestId);
+            const userIndex = db.users.findIndex(u => u.username === username);
+
+            if (requestIndex === -1 || userIndex === -1) {
+                showModal('त्रुटि', 'अनुरोध वा प्रयोगकर्ता फेला परेन।');
+                return;
+            }
+
+            const user = db.users[userIndex];
+            const request = db.requests[requestIndex];
+            
+            // Credit balance back (since it was debited on request)
+            user.balance += amount;
+
+            // Mark request as rejected
+            request.status = 'rejected';
+
+            // Update transaction log
+             const debitTxIndex = user.transactions.findIndex(t => 
+                t.type === 'withdrawal_debit' && 
+                t.amount === -amount && 
+                t.reason === 'निकासी अनुरोध (विचाराधीन)' &&
+                new Date(t.date).toDateString() === new Date(request.date).toDateString()
+            );
+
+            if (debitTxIndex !== -1) {
+                 user.transactions[debitTxIndex].reason = 'निकासी अनुरोध अस्वीकृत (डेबिट फिर्ता)';
+                 user.transactions[debitTxIndex].type = 'withdrawal_rejected_refund';
+            } 
+            
+            saveDB(db);
+            showModal('अस्वीकृत', `रू. ${amount.toFixed(2)} निकासी अनुरोध अस्वीकृत भयो। रकम फिर्ता गरियो।`);
+            renderPendingRequests(db);
+            if (loggedInUsername === username) loadDashboardData(); // Reload current user's balance
+        };
+
+        const renderRequestCard = (request) => {
+            const isDeposit = request.type === 'deposit';
+            const actionText = isDeposit ? 'जम्मा' : 'निकासी';
+            const cardClass = isDeposit ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50';
+            const details = isDeposit ? `ट्रान्जेक्शन कोड: <span class="font-semibold">${request.transactionCode}</span>` : `भुक्तानी विवरण: <span class="font-semibold">${request.details.substring(0, 30)}...</span>`;
+
+            return `
+                <div class="p-3 border-l-4 ${cardClass} rounded-lg shadow-sm">
+                    <p class="font-bold text-gray-800">${actionText} अनुरोध (${request.status === 'pending' ? 'विचाराधीन' : 'अस्वीकृत'})</p>
+                    <p class="text-lg font-extrabold text-indigo-600">रू. ${request.amount.toFixed(2)}</p>
+                    <p class="text-sm text-gray-600">प्रयोगकर्ता: ${request.username} | विधि: ${request.paymentMethod}</p>
+                    <p class="text-xs text-gray-500 mt-1">${details}</p>
+                    <div class="flex space-x-2 mt-3">
+                        ${isDeposit ? 
+                            `<button onclick="window.appHandlers.approveDeposit('${request.id}', '${request.username}', ${request.amount})" class="bg-green-600 text-white px-3 py-1 rounded-full text-xs hover:bg-green-700">स्वीकृत</button>
+                             <button onclick="window.appHandlers.rejectDeposit('${request.id}', '${request.username}', ${request.amount})" class="bg-red-600 text-white px-3 py-1 rounded-full text-xs hover:bg-red-700">अस्वीकृत</button>`
+                            :
+                            `<button onclick="window.appHandlers.approveWithdrawal('${request.id}', '${request.username}', ${request.amount})" class="bg-green-600 text-white px-3 py-1 rounded-full text-xs hover:bg-green-700">भुक्तानी गरियो</button>
+                             <button onclick="window.appHandlers.rejectWithdrawal('${request.id}', '${request.username}', ${request.amount})" class="bg-red-600 text-white px-3 py-1 rounded-full text-xs hover:bg-red-700">अस्वीकृत र फिर्ता</button>`
+                        }
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderPendingRequests = (db) => {
+            const pendingDeposits = db.requests.filter(req => req.type === 'deposit' && req.status === 'pending').sort((a, b) => new Date(a.date) - new Date(b.date));
+            const pendingWithdrawals = db.requests.filter(req => req.type === 'withdrawal' && req.status === 'pending').sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            elements.pendingDepositsList.innerHTML = pendingDeposits.length > 0 ? 
+                pendingDeposits.map(renderRequestCard).join('') : 
+                '<p class="text-center text-gray-500 p-2 bg-white rounded-lg">कुनै विचाराधीन जम्मा अनुरोध छैन।</p>';
+
+            elements.pendingWithdrawalsList.innerHTML = pendingWithdrawals.length > 0 ? 
+                pendingWithdrawals.map(renderRequestCard).join('') : 
+                '<p class="text-center text-gray-500 p-2 bg-white rounded-lg">कुनै विचाराधीन निकासी अनुरोध छैन।</p>';
+        };
+        
+        // --- ADMIN SETTINGS LOGIC ---
+        
+        // MODIFIED: Added task unlock amount 1 & 2
+        const loadAdminSettings = (settings, financialSettings) => {
+             // General Settings
+            elements.dailyCheckinRewardInput.value = settings.DAILY_CHECKIN_REWARD;
+            elements.telegramLinkInput.value = settings.telegramLink;
+            elements.esewaIdInput.value = settings.esewaID;
+            document.getElementById('khalti-id').value = settings.khaltiID;
+            document.getElementById('bank-details').value = settings.bankDetails;
+            
+            // Financial Settings
+            elements.taskUnlockAmount1Input.value = financialSettings.TASK_UNLOCK_AMOUNT_1; 
+            elements.taskUnlockAmount2Input.value = financialSettings.TASK_UNLOCK_AMOUNT_2; 
+            elements.taskExpiryDaysInput.value = financialSettings.TASK_EXPIRY_DAYS; 
+            elements.minDepositInput.value = financialSettings.MIN_DEPOSIT;
+            elements.minWithdrawInput.value = financialSettings.MIN_WITHDRAW;
+        };
+        
+        const saveFinancialSettings = (e) => {
+            e.preventDefault();
+            const db = getDB();
+            
+            const taskUnlockAmount1 = parseFloat(elements.taskUnlockAmount1Input.value);
+            const taskUnlockAmount2 = parseFloat(elements.taskUnlockAmount2Input.value);
+            const taskExpiryDays = parseInt(elements.taskExpiryDaysInput.value);
+            const minDeposit = parseFloat(elements.minDepositInput.value);
+            const minWithdraw = parseFloat(elements.minWithdrawInput.value);
+            
+            if (isNaN(taskUnlockAmount1) || taskUnlockAmount1 < 100 || isNaN(taskUnlockAmount2) || taskUnlockAmount2 < 100 || isNaN(taskExpiryDays) || taskExpiryDays < 1 || isNaN(minDeposit) || minDeposit < 10 || isNaN(minWithdraw) || minWithdraw < 10) {
+                 showModal('त्रुटि', 'मान्य वित्तीय सीमाहरू प्रविष्ट गर्नुहोस्।');
+                 return;
+            }
+            if (taskUnlockAmount2 < taskUnlockAmount1) {
+                 showModal('त्रुटि', 'Slot 2 अनलक रकम Slot 1 भन्दा कम हुनु हुँदैन।');
+                 return;
+            }
+
+            db.financialSettings = { 
+                TASK_UNLOCK_AMOUNT_1: taskUnlockAmount1, 
+                TASK_UNLOCK_AMOUNT_2: taskUnlockAmount2,
+                TASK_EXPIRY_DAYS: taskExpiryDays,
+                MIN_DEPOSIT: minDeposit, 
+                MIN_WITHDRAW: minWithdraw 
+            };
+            saveDB(db);
+            showModal('सफलता', 'वित्तीय सीमाहरू सफलतापूर्वक बचत गरियो।');
+            loadDashboardData(); // Refresh to update messages
+        };
+        
+        const saveGeneralSettings = (e) => {
+            e.preventDefault();
+            const db = getDB();
+            
+            const dailyCheckinReward = parseFloat(elements.dailyCheckinRewardInput.value);
+            if (isNaN(dailyCheckinReward) || dailyCheckinReward < 1) {
+                 showModal('त्रुटि', 'मान्य दैनिक चेक-इन पुरस्कार प्रविष्ट गर्नुहोस्।');
+                 return;
+            }
+
+            db.settings.DAILY_CHECKIN_REWARD = dailyCheckinReward;
+            db.settings.telegramLink = elements.telegramLinkInput.value.trim();
+            db.settings.esewaID = elements.esewaIdInput.value.trim();
+            db.settings.khaltiID = document.getElementById('khalti-id').value.trim();
+            db.settings.bankDetails = document.getElementById('bank-details').value.trim();
+            
+            saveDB(db);
+            showModal('सफलता', 'सेटिङहरू सफलतापूर्वक बचत गरियो।');
+            loadDashboardData(); // Refresh to update telegram button and check-in amount
+        };
+        
+        // --- HISTORY TAB LOGIC ---
+        
+        // Map transaction types to Nepali names and colors
+        const txTypeMap = {
+            'deposit_credit': { name: 'जम्मा (स्वीकृत)', color: 'deposit-card' },
+            'withdrawal_approved': { name: 'निकासी (भुक्तानी)', color: 'withdrawal-card' },
+            'withdrawal_debit': { name: 'निकासी अनुरोध', color: 'withdrawal-card' },
+            'withdrawal_rejected_refund': { name: 'निकासी अस्वीकृत (फिर्ता)', color: 'checkin-card' },
+            'deposit_rejected': { name: 'जम्मा (अस्वीकृत)', color: 'withdrawal-card' },
+            'task_credit': { name: 'कार्य आम्दानी', color: 'task-card' },
+            'daily_checkin_credit': { name: 'दैनिक चेक-इन', color: 'checkin-card' },
+            'referral_commission': { name: 'रेफरल कमिसन', color: 'commission-card' },
+            'tasks_unlocked': { name: 'Slot 1 अनलक (एडमिन)', color: 'deposit-card' },
+            'tasks_unlocked_slot2': { name: 'Slot 2 अनलक (एडमिन)', color: 'deposit-card' },
+            'tasks_extended': { name: 'टास्क म्याद थप', color: 'deposit-card' },
+            'tasks_unlocked_deposit': { name: 'Slot 1 अनलक (जम्मा)', color: 'deposit-card' },
+            'tasks_unlocked_slot2_deposit': { name: 'Slot 2 अनलक (जम्मा)', color: 'commission-card' },
+            'balance_adjusted': { name: 'ब्यालेन्स समायोजन', color: 'checkin-card' },
+        };
+
+        const renderHistoryTab = (db, currentUser) => {
+            if (currentUser.isAdmin) {
+                 elements.historyContentArea.innerHTML = '<p class="text-center text-red-500 font-semibold">एडमिनको लागि ट्रान्जेक्शन इतिहास उपलब्ध छैन।</p>';
+                 return;
+            }
+
+            const transactions = currentUser.transactions || [];
+            
+            if (transactions.length === 0) {
+                 elements.historyContentArea.innerHTML = '<p class="text-center text-gray-500 p-4 bg-gray-100 rounded-lg">तपाईंको कुनै ट्रान्जेक्शन इतिहास छैन।</p>';
+                 return;
+            }
+
+            // Sort by date descending
+            const sortedTx = transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            elements.historyContentArea.innerHTML = sortedTx.map(tx => {
+                 const typeInfo = txTypeMap[tx.type] || { name: 'अन्य ट्रान्जेक्शन', color: 'bg-gray-100 border-gray-400' };
+                 const amountClass = tx.amount >= 0 ? 'text-green-600' : 'text-red-600';
+                 const sign = tx.amount > 0 ? '+' : '';
+
+                 return `
+                    <div class="history-card ${typeInfo.color}">
+                        <div class="flex justify-between items-center">
+                            <p class="font-bold text-gray-800">${typeInfo.name}</p>
+                            <p class="text-lg font-extrabold ${amountClass}">${sign}रू. ${Math.abs(tx.amount).toFixed(2)}</p>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">${tx.reason}</p>
+                        <p class="text-xs text-gray-500 mt-1 text-right">${formatDate(tx.date)}</p>
+                    </div>
+                 `;
+            }).join('');
+        };
+        
+        // --- INVITE TAB LOGIC ---
+        
+        const renderInviteTab = (db, currentUser) => {
+            if (currentUser.isAdmin) {
+                 document.getElementById('invite-tab').querySelector('.card').innerHTML = '<p class="text-center text-red-500 font-semibold">एडमिनको लागि आमन्त्रित सुविधा उपलब्ध छैन।</p>';
+                 return;
+            }
+            
+            const myCode = currentUser.referralCode;
+            elements.myReferralCode.textContent = myCode;
+            elements.referralCommission.textContent = `रू. ${currentUser.totalCommission.toFixed(2)}`;
+
+            const totalReferrals = db.users.filter(u => u.referredByCode === myCode).length;
+            elements.totalReferrals.textContent = totalReferrals;
+        };
+        
+        // --- EVENT HANDLERS ---
+        
+        elements.modalCloseBtn.addEventListener('click', hideModal);
+        
+        elements.tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => setActiveTab(btn.dataset.tab));
+        });
+
+        document.getElementById('show-register-btn').addEventListener('click', () => {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('register-view').classList.remove('hidden');
+        });
+
+        document.getElementById('show-login-btn').addEventListener('click', () => {
+            document.getElementById('register-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+        });
+        
+        // --- Login/Register Handlers ---
+        
+        const handleLogin = (e) => {
+             e.preventDefault();
+             const username = document.getElementById('login-username').value.trim();
+             const password = document.getElementById('login-password').value.trim();
+             const db = getDB();
+             
+             const isAdmin = username.toLowerCase() === db.settings.adminUsername.toLowerCase();
+             
+             if (isAdmin) {
+                 if (password === db.settings.adminPassword) {
+                      loggedInUsername = db.settings.adminUsername;
+                      sessionStorage.setItem('loggedInUser', loggedInUsername);
+                      setView(true);
+                 } else {
+                     document.getElementById('login-status-message').textContent = 'त्रुटि: गलत पासवर्ड';
+                     document.getElementById('login-status-message').classList.remove('hidden');
+                 }
+                 return;
+             }
+
+             const user = db.users.find(u => u.username === username);
+
+             if (user && user.password === password) {
+                 loggedInUsername = username;
+                 sessionStorage.setItem('loggedInUser', loggedInUsername);
+                 setView(true);
+             } else {
+                 document.getElementById('login-status-message').textContent = 'त्रुटि: प्रयोगकर्ता नाम वा पासवर्ड गलत छ।';
+                 document.getElementById('login-status-message').classList.remove('hidden');
+             }
+        };
+
+        const handleRegistration = (e) => {
+             e.preventDefault();
+             const username = document.getElementById('register-username').value.trim();
+             const password = document.getElementById('register-password').value.trim();
+             const referredByCode = document.getElementById('register-referral-code').value.trim().toUpperCase();
+             const db = getDB();
+             
+             if (db.users.some(u => u.username === username)) {
+                 showModal('त्रुटि', 'यो प्रयोगकर्ता नाम पहिले नै प्रयोगमा छ।');
+                 return;
+             }
+             
+             let referrerUser = null;
+             if (referredByCode) {
+                 referrerUser = db.users.find(u => u.referralCode === referredByCode);
+                 if (!referrerUser) {
+                      showModal('त्रुटि', 'रेफरल कोड अमान्य छ।');
+                      return;
+                 }
+             }
+             
+             const newUser = {
+                 id: Date.now() + Math.floor(Math.random() * 1000),
+                 username,
+                 password,
+                 balance: referrerUser ? REFERRAL_BONUS_AMOUNT : 0.00,
+                 referralCode: username.toUpperCase(), // Referral code is now the uppercase username
+                 referredByCode: referredByCode || null,
+                 totalCommission: 0.00,
+                 tasksExpiryDate: null, 
+                 lastCheckinDate: null,
+                 taskCompletions: [],
+                 transactions: [],
+                 hasDeposited: false, // Slot 1 unlock flag
+                 hasUnlockedSlot2: false // Slot 2 unlock flag
+             };
+             
+             // Add transaction for referral bonus
+             if (referrerUser) {
+                 newUser.transactions.push({
+                     type: 'referral_bonus',
+                     amount: REFERRAL_BONUS_AMOUNT,
+                     date: new Date().toISOString(),
+                     reason: `रेफरल कोड (${referredByCode}) प्रयोग गरे बापत बोनस`
+                 });
+             }
+
+             db.users.push(newUser);
+             saveDB(db);
+
+             loggedInUsername = username;
+             sessionStorage.setItem('loggedInUser', loggedInUsername);
+             setView(true);
+             showModal('सफलता', `दर्ता सफल भयो! ${referrerUser ? `रू. ${REFERRAL_BONUS_AMOUNT.toFixed(2)} बोनस तपाईंको खातामा थपिएको छ।` : ''}`);
+        };
+
+        const handleLogout = (showConfirm = true) => {
+            if (showConfirm && !confirm('के तपाईं लगआउट गर्न चाहनुहुन्छ?')) return;
+            sessionStorage.removeItem('loggedInUser');
+            loggedInUsername = null;
+            setView(false);
+        };
+        
+        // --- Admin Form Handlers ---
+        
+        document.getElementById('add-task1-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('task1-title').value.trim();
+            const reward = document.getElementById('task1-reward').value;
+            if (title && reward) {
+                addTask(title, reward, 'tasks1');
+            }
+        });
+        
+        document.getElementById('add-task2-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('task2-title').value.trim();
+            const reward = document.getElementById('task2-reward').value;
+            if (title && reward) {
+                addTask(title, reward, 'tasks2');
+            }
+        });
+
+        document.getElementById('financial-limits-form').addEventListener('submit', saveFinancialSettings);
+        document.getElementById('settings-form').addEventListener('submit', saveGeneralSettings);
+        
+        // --- Initial Load & App Setup ---
+        
+        const initApp = () => {
+            initializeDB(); 
+            
+            // Register all handlers globally for dynamic buttons (Admin Panel)
+            window.appHandlers = {
+                 toggleUserDetail, 
+                 showUserBalanceModal, 
+                 deleteUser, 
+                 approveDeposit, 
+                 rejectDeposit, 
+                 approveWithdrawal, 
+                 rejectWithdrawal, 
+                 deleteTask, 
+                 completeTask,
+                 extendTasks, 
+                 unlockTasks, // Slot 1 Unlock (Basic)
+                 unlockTasksSlot2, // Slot 2 Unlock (Premium)
+                 hideModal, // Expose hideModal for Admin modal buttons
+            };
+            
+            // Direct button handlers
+            document.getElementById('login-form').addEventListener('submit', handleLogin);
+            document.getElementById('register-form').addEventListener('submit', handleRegistration);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            elements.dailyCheckinBtn.addEventListener('click', handleDailyCheckin);
+            
+            // Go to Deposit from Tasks lock page
+            document.getElementById('go-to-deposit-btn').addEventListener('click', () => setActiveTab('deposit'));
+            
+            // Copy Referral Code
+            document.getElementById('copy-referral-btn').addEventListener('click', () => {
+                 const code = elements.myReferralCode.textContent;
+                 navigator.clipboard.writeText(code).then(() => {
+                     showModal('कपी गरियो', `रेफरल कोड <span class="font-bold text-indigo-600">${code}</span> सफलतापूर्वक कपी गरियो।`);
+                 }).catch(err => {
+                     showModal('त्रुटि', 'कोड कपी गर्न सकिएन। कृपया म्यानुअल्ली कपी गर्नुहोस्।');
+                 });
+            });
+
+            // If a user is already logged in, show dashboard
+            if (loggedInUsername) {
+                setView(true);
+            } else {
+                setView(false);
+            }
+        };
+
+        // --- User/Balance Management Utility Functions (Admin) ---
+        
+        const showUserBalanceModal = (username, currentBalance) => {
+             const userBalanceModal = `
+                <h3 class="text-xl font-bold mb-3 text-blue-600">ब्यालेन्स समायोजन</h3>
+                <p class="mb-4">प्रयोगकर्ता: <span class="font-semibold">${username}</span></p>
+                <p class="mb-4">वर्तमान ब्यालेन्स: <span class="font-bold text-green-600">रू. ${currentBalance.toFixed(2)}</span></p>
+                <form id="adjust-balance-form" data-username="${username}">
+                    <label class="block mb-3">
+                        <span class="text-gray-700 font-semibold">समायोजन रकम (रू.)</span>
+                        <input type="number" id="adjustment-amount" class="mt-1 block w-full px-3 py-2 border rounded-lg" placeholder="100.00 (थप्न) वा -50.00 (घटाउन)" required step="0.01">
+                        <p class="text-xs text-gray-500 mt-1">सकारात्मक रकम थप्न, नकारात्मक रकम घटाउन प्रयोग गर्नुहोस्।</p>
+                    </label>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded-lg" onclick="window.appHandlers.hideModal()">रद्द गर्नुहोस्</button>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">समायोजन गर्नुहोस्</button>
+                    </div>
+                </form>
+             `;
+             showModal('ब्यालेन्स समायोजन', userBalanceModal);
+             
+             document.getElementById('adjust-balance-form').addEventListener('submit', (e) => {
+                 e.preventDefault();
+                 const amount = parseFloat(document.getElementById('adjustment-amount').value);
+                 handleBalanceAdjustment(username, amount);
+                 hideModal();
+             });
+        };
+
+        const handleBalanceAdjustment = (username, adjustmentAmount) => {
+            const db = getDB();
+            const userIndex = db.users.findIndex(u => u.username === username);
+
+            if (userIndex === -1 || isNaN(adjustmentAmount) || adjustmentAmount === 0) {
+                showModal('त्रुटि', 'अमान्य प्रयोगकर्ता वा रकम।');
+                return;
+            }
+
+            const user = db.users[userIndex];
+            user.balance += adjustmentAmount;
+            
+             if (!user.transactions) user.transactions = [];
+             user.transactions.push({
+                 type: 'balance_adjusted',
+                 amount: adjustmentAmount,
+                 date: new Date().toISOString(),
+                 reason: `ब्यालेन्स समायोजन (एडमिनद्वारा) ${adjustmentAmount >= 0 ? 'थपिएको' : 'घटाइएको'}`
+             });
+
+            saveDB(db);
+            showModal('सफलता', `${username} को ब्यालेन्स सफलतापूर्वक रू. ${adjustmentAmount.toFixed(2)} ले समायोजन गरियो। नयाँ ब्यालेन्स: रू. ${user.balance.toFixed(2)}`);
+            renderUserManagement(db); // Reload list
+            if (loggedInUsername === username) loadDashboardData(); // Reload current user's data
+        };
+
+        const deleteUser = (username) => {
+             if (!confirm(`के तपाईं साँच्चै प्रयोगकर्ता ${username} लाई मेटाउन चाहनुहुन्छ? यो कार्य अनडू गर्न सकिँदैन।`)) return;
+             
+             const db = getDB();
+             const initialCount = db.users.length;
+             db.users = db.users.filter(u => u.username !== username);
+             
+             if (db.users.length === initialCount) {
+                  showModal('त्रुटि', 'प्रयोगकर्ता फेला परेन।');
+                  return;
+             }
+             
+             // Also remove their pending requests
+             db.requests = db.requests.filter(req => req.username !== username);
+             
+             saveDB(db);
+             showModal('सफलता', `प्रयोगकर्ता ${username} सफलतापूर्वक मेटाइयो।`);
+             renderUserManagement(db);
+        };
+        
+        // Start the application
+        initApp();
+        
+    })();
+    // --- End of IIFE ---
+    </script>
+</body>
+</html>
